@@ -1,0 +1,79 @@
+{
+  /* 
+  Required Human Tasks:
+  1. Ensure @typescript-eslint/parser@^6.0.0 is installed
+  2. Ensure @typescript-eslint/eslint-plugin@^6.0.0 is installed
+  3. Ensure eslint-config-prettier@^9.0.0 is installed
+  4. Ensure eslint-plugin-prettier@^5.0.0 is installed
+  5. Verify Node.js version is compatible with ES2022
+  */
+
+  // Addresses requirement: TypeScript Support - Using TypeScript parser for enhanced linting
+  "parser": "@typescript-eslint/parser",
+  
+  // Addresses requirement: TypeScript Support - Configure parser for TypeScript integration
+  "parserOptions": {
+    "ecmaVersion": 2022,
+    "sourceType": "module",
+    "project": "./tsconfig.json"
+  },
+
+  // Addresses requirement: Backend Development Standards - Extending recommended rulesets
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "prettier"
+  ],
+
+  // Addresses requirement: Backend Development Standards - TypeScript and Prettier plugins
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+
+  // Addresses requirement: Backend Development Standards - Environment configuration
+  "env": {
+    "node": true,
+    "jest": true,
+    "es2022": true
+  },
+
+  // Addresses requirements: Backend Development Standards & Microservices Architecture
+  "rules": {
+    // Integration with Prettier
+    "prettier/prettier": "error",
+
+    // TypeScript-specific rules
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-unused-vars": ["error", {
+      "argsIgnorePattern": "^_"
+    }],
+    "@typescript-eslint/no-unsafe-assignment": "error",
+    "@typescript-eslint/no-unsafe-member-access": "error",
+    "@typescript-eslint/no-unsafe-call": "error",
+    "@typescript-eslint/no-unsafe-return": "error",
+
+    // General code quality rules
+    "no-console": ["error", {
+      "allow": ["warn", "error"]
+    }],
+    "no-unused-vars": "off",
+    "no-var": "error",
+    "prefer-const": "error",
+    "eqeqeq": ["error", "always"],
+    "curly": ["error", "all"]
+  },
+
+  // Addresses requirement: Microservices Architecture - Ignore patterns for build artifacts
+  "ignorePatterns": [
+    "dist",
+    "node_modules",
+    "**/*.js",
+    "**/*.d.ts"
+  ],
+
+  // Prevent ESLint from searching for config files in parent directories
+  "root": true
+}
