@@ -1,0 +1,155 @@
+# Human Tasks:
+# 1. Verify container image registry credentials are configured in cluster
+# 2. Ensure network policies are configured to allow required service communication
+# 3. Validate MongoDB cluster is properly configured and accessible
+# 4. Confirm monitoring and logging agents are deployed
+# 5. Review resource quotas at namespace level
+# 6. Verify service mesh configuration if using Istio/Linkerd
+# 7. Check cluster autoscaler settings align with HPA configuration
+
+---
+# Requirement: Gamification System (1.3 Scope/Core Features)
+# Deployment configuration for the gamification microservice
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gamification-service
+  labels:
+    app: gamification-service
+    tier: backend
+    environment: production
+  annotations:
+    description: "Gamification system for user points and achievements"
+spec:
+  # Requirement: Scalability (2.2.1 Core Components/Component Details)
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: gamification-service
+  template:
+    metadata:
+      labels:
+        app: gamification-service
+    spec:
+      containers:
+        - name: gamification-service
+          # Using Node.js 20-alpine as the base image for lightweight container
+          image: founditure/gamification-service:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 3005
+              protocol: TCP
+          env:
+            - name: MONGODB_URI
+              valueFrom:
+                secretKeyRef:
+                  name: founditure-secrets
+                  key: MONGODB_URI
+            - name: PORT
+              value: "3005"
+            - name: NODE_ENV
+              value: "production"
+            # Load environment-specific configuration
+            - name: CONFIG_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: founditure-config
+                  key: NODE_ENV
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          # Health monitoring configuration
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 3005
+            initialDelaySeconds: 30
+            periodSeconds: 15
+            timeoutSeconds: 5
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 3005
+            initialDelaySeconds: 15
+            periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 3
+          volumeMounts:
+            - name: mongodb-credentials
+              mountPath: /etc/secrets
+              readOnly: true
+      volumes:
+        - name: mongodb-credentials
+          secret:
+            secretName: founditure-secrets
+      # Security context for the pod
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 2000
+
+---
+# Service configuration for the gamification microservice
+apiVersion: v1
+kind: Service
+metadata:
+  name: gamification-service
+  labels:
+    app: gamification-service
+  annotations:
+    description: "Internal service endpoint for gamification system"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 3005
+      protocol: TCP
+      name: http
+  selector:
+    app: gamification-service
+
+---
+# Requirement: Scalability (2.2.1 Core Components/Component Details)
+# Horizontal Pod Autoscaler configuration
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: gamification-service-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: gamification-service
+  minReplicas: 2
+  maxReplicas: 10
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 70
+  behavior:
+    scaleUp:
+      stabilizationWindowSeconds: 60
+      policies:
+        - type: Pods
+          value: 2
+          periodSeconds: 60
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Pods
+          value: 1
+          periodSeconds: 60
