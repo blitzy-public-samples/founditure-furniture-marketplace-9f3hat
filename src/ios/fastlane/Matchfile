@@ -1,0 +1,57 @@
+# fastlane-match version: 2.217.0
+
+# HUMAN TASKS:
+# 1. Set up a private Git repository for storing certificates and profiles
+# 2. Configure the following secure environment variables in your CI/CD system:
+#    - MATCH_GIT_URL: URL of the private Git repository for certificates
+#    - APPLE_ID: Your Apple Developer account email
+#    - TEAM_ID: Your Apple Developer Team ID
+# 3. Ensure the Git repository is access-restricted to authorized team members only
+# 4. Run 'fastlane match development' locally first to generate initial certificates
+
+# Requirement: Security
+# Location: 5. SECURITY CONSIDERATIONS/5.1 Authentication and Authorization
+# Git repository URL for storing encrypted certificates and provisioning profiles
+git_url(ENV['MATCH_GIT_URL'])
+
+# Requirement: Security
+# Location: 5. SECURITY CONSIDERATIONS/5.1 Authentication and Authorization
+# Use Git as the storage backend for secure certificate management
+storage_mode("git")
+
+# Requirement: iOS App Distribution
+# Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+# Type of certificates to sync (development, appstore, adhoc)
+type("development")
+
+# Requirement: iOS App Distribution
+# Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+# Bundle identifier for certificate matching
+app_identifier(["com.founditure.app"])
+
+# Requirement: Continuous Integration
+# Location: 6.5 CI/CD PIPELINE/Pipeline Stages
+# Apple ID for authentication with Apple services
+username(ENV['APPLE_ID'])
+
+# Requirement: iOS App Distribution
+# Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+# Apple Developer Team identifier
+team_id(ENV['TEAM_ID'])
+
+# Requirement: Continuous Integration
+# Location: 6.5 CI/CD PIPELINE/Pipeline Stages
+# Use master branch for certificate storage
+git_branch("master")
+
+# Requirement: iOS App Distribution
+# Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+# Specify iOS platform for certificate management
+platform("ios")
+
+# Requirement: Security
+# Location: 5. SECURITY CONSIDERATIONS/5.1 Authentication and Authorization
+# Prevent certificate modifications in CI environment
+def readonly
+  ENV['CI'] == true
+end
