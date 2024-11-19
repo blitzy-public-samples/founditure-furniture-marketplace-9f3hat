@@ -1,0 +1,30 @@
+{
+  "watch": [
+    "src/ai-service/src",
+    "src/analytics-service/src",
+    "src/api-gateway/src",
+    "src/auth-service/src",
+    "src/gamification-service/src",
+    "src/listing-service/src",
+    "src/location-service/src",
+    "src/messaging-service/src",
+    "src/notification-service/src",
+    "src/shared"
+  ],
+  "ext": ".ts,.js,.json",
+  "ignore": [
+    "**/*.test.ts",
+    "**/*.spec.ts",
+    ".git",
+    "node_modules",
+    "dist"
+  ],
+  "exec": "ts-node",
+  "env": {
+    "NODE_ENV": "development",
+    "TS_NODE_PROJECT": "./tsconfig.json"
+  },
+  "verbose": true,
+  "delay": 1000,
+  "legacyWatch": false
+}
