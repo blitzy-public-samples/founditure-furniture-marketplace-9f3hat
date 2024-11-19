@@ -1,0 +1,115 @@
+# Human Tasks:
+# 1. Verify Redis cluster topology matches environment requirements
+# 2. Configure backup and restore procedures for Redis data
+# 3. Review Redis memory allocation based on environment workload
+# 4. Set up monitoring and alerting for Redis metrics
+# 5. Validate network policies for Redis access
+# 6. Configure Redis sentinel for production environment
+# 7. Review Redis persistence settings per environment
+
+---
+# Requirement: Caching Layer (4.2 Frameworks & Libraries/Backend Development)
+# Redis StatefulSet for session and real-time data caching
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+  namespace: default
+  labels:
+    app: founditure
+    component: redis
+    environment: ${ENV}
+spec:
+  # Requirement: High Availability (6.1 Deployment Environment/Environment Specifications)
+  # Multi-AZ deployment with 3 replicas for high availability
+  serviceName: redis-service
+  replicas: 3
+  selector:
+    matchLabels:
+      app: founditure
+      component: redis
+  template:
+    metadata:
+      labels:
+        app: founditure
+        component: redis
+    spec:
+      containers:
+        - name: redis
+          # Redis version 7.0-alpine for lightweight container
+          image: redis:7.0-alpine
+          ports:
+            - containerPort: 6379
+              protocol: TCP
+          # Resource allocation for predictable performance
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+          volumeMounts:
+            - name: redis-data
+              mountPath: /data
+          # Health monitoring configuration
+          livenessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          readinessProbe:
+            tcpSocket:
+              port: 6379
+            initialDelaySeconds: 15
+            periodSeconds: 5
+          # Requirement: Message Broker (2.2.1 Core Components)
+          # Environment variables from ConfigMap for Redis configuration
+          env:
+            - name: REDIS_MAX_CONNECTIONS
+              valueFrom:
+                configMapKeyRef:
+                  name: founditure-config
+                  key: REDIS_CONFIG.MAX_CONNECTIONS
+            - name: REDIS_IDLE_TIMEOUT
+              valueFrom:
+                configMapKeyRef:
+                  name: founditure-config
+                  key: REDIS_CONFIG.IDLE_TIMEOUT
+            - name: REDIS_ENABLE_TLS
+              valueFrom:
+                configMapKeyRef:
+                  name: founditure-config
+                  key: REDIS_CONFIG.ENABLE_TLS
+  # Persistent volume configuration for data storage
+  volumeClaimTemplates:
+    - metadata:
+        name: redis-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+        storageClassName: gp2
+
+---
+# Redis Service for internal cluster access
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-service
+  namespace: default
+  labels:
+    app: founditure
+    component: redis
+spec:
+  # Internal-only access via ClusterIP
+  type: ClusterIP
+  ports:
+    - port: 6379
+      targetPort: 6379
+      protocol: TCP
+  selector:
+    app: founditure
+    component: redis
