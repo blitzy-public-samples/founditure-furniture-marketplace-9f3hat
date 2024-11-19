@@ -1,0 +1,45 @@
+{
+  "name": "@founditure/api-gateway",
+  "version": "1.0.0",
+  "description": "API Gateway service for Founditure platform handling request routing, authentication, rate limiting, and API security using Kong Gateway",
+  "type": "module",
+  "main": "dist/app.js",
+  "types": "dist/app.d.ts",
+  "engines": {
+    "node": ">=20.0.0",
+    "npm": ">=9.0.0"
+  },
+  "scripts": {
+    "start": "node dist/app.js",
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint . --ext .ts"
+  },
+  "dependencies": {
+    "express": "^4.18.0",
+    "helmet": "^7.0.0",
+    "cors": "^2.8.5",
+    "compression": "^1.7.4",
+    "morgan": "^1.10.0",
+    "jsonwebtoken": "^9.0.0",
+    "express-rate-limit": "^6.7.0",
+    "express-validator": "^7.0.0",
+    "winston": "^3.8.0",
+    "dotenv": "^16.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/express": "^4.17.17",
+    "@types/cors": "^2.8.13",
+    "@types/morgan": "^1.9.4",
+    "@types/compression": "^1.7.2",
+    "@types/jsonwebtoken": "^9.0.2",
+    "jest": "^29.5.0",
+    "@types/jest": "^29.5.0",
+    "ts-jest": "^29.1.0",
+    "nodemon": "^2.0.22",
+    "ts-node": "^10.9.1"
+  }
+}
