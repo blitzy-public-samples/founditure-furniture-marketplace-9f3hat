@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify that both ic_launcher_background.xml and ic_launcher_foreground.xml are properly configured
+2. Test adaptive icon rendering on Android 8.0+ devices with different screen densities
+3. Validate icon appearance with Material Design 3 dynamic colors in both light and dark themes
+4. Ensure proper safe zone implementation (72dp x 72dp) for icon content
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3. SYSTEM DESIGN/3.1 User Interface Design/3.1.1 Design Specifications):
+  Implements Material Design 3 principles for adaptive launcher icons with proper layering
+- Device Support (3. SYSTEM DESIGN/3.1 User Interface Design/3.1.1 Design Specifications):
+  Supports Android 10+ platform requirements for adaptive icons with full compatibility
+-->
+
+<!-- Platform Component: android.graphics.drawable.adaptive-icon (android-26) -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 
+    Background layer:
+    - Covers full 108dp x 108dp viewport
+    - Uses Material Design 3 dynamic color system
+    - References background drawable with proper scaling
+    -->
+    <background android:drawable="@drawable/ic_launcher_background"/>
+
+    <!-- 
+    Foreground layer:
+    - Centered within 72dp x 72dp safe zone
+    - Contains furniture-themed icon design
+    - Supports dynamic tinting through color resources
+    -->
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
