@@ -1,0 +1,49 @@
+{
+  "name": "@founditure/location-service",
+  "version": "1.0.0",
+  "description": "Location Service microservice for geolocation features, location-based furniture discovery, and Google Maps integration",
+  "main": "dist/app.js",
+  "scripts": {
+    "start": "node dist/app.js",
+    "dev": "nodemon src/app.ts",
+    "build": "tsc",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "lint": "eslint . --ext .ts",
+    "format": "prettier --write \"src/**/*.ts\"",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "helmet": "^7.0.0",
+    "compression": "^1.7.4",
+    "mongoose": "^7.0.0",
+    "@types/geojson": "^7946.0.10",
+    "inversify": "^6.0.1",
+    "inversify-express-utils": "^6.4.3",
+    "@googlemaps/google-maps-services-js": "^3.3.35",
+    "winston": "^3.10.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0",
+    "@types/express": "^4.17.17",
+    "@types/cors": "^2.8.13",
+    "@types/compression": "^1.7.2",
+    "@types/jest": "^29.5.3",
+    "jest": "^29.6.2",
+    "ts-jest": "^29.1.1",
+    "nodemon": "^3.0.1",
+    "eslint": "^8.46.0",
+    "prettier": "^3.0.1"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "private": true,
+  "type": "module",
+  "author": "Founditure",
+  "license": "UNLICENSED"
+}
