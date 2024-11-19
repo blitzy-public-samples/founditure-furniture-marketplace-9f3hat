@@ -1,0 +1,88 @@
+# Human Tasks:
+# 1. Replace Slack webhook URL with actual workspace webhook
+# 2. Configure PagerDuty service and routing keys
+# 3. Verify SMTP server credentials and settings
+# 4. Test alert delivery to all configured channels
+# 5. Review and adjust grouping intervals based on operational needs
+
+# Addresses requirements:
+# - System Monitoring: Alert routing and notification delivery with severity-based routing
+# - Security Monitoring: PagerDuty integration for critical security incidents
+# - Production Monitoring: 24/7 automated alert management with configurable channels
+
+# Alertmanager version: 0.25.0
+
+global:
+  # Global configuration settings
+  resolve_timeout: 5m
+  smtp_smarthost: 'smtp.founditure.com:587'
+  smtp_from: 'alerts@founditure.com'
+  slack_api_url: 'https://hooks.slack.com/services/xxx/yyy/zzz'
+
+# Templates for notification formatting
+templates:
+  - 'templates/default.tmpl'
+
+# Main routing tree
+route:
+  # Default route configuration
+  receiver: 'default-receiver'
+  group_by: ['alertname', 'cluster', 'service']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+
+  # Specific routing configurations
+  routes:
+    # Critical alerts route
+    - receiver: 'pagerduty-critical'
+      match:
+        severity: 'critical'
+      group_wait: 0s
+      group_interval: 1m
+      repeat_interval: 30m
+      continue: true
+
+# Notification receivers configuration
+receivers:
+  # Default Slack receiver for warning and info alerts
+  - name: 'default-receiver'
+    slack_configs:
+      - channel: '#alerts-general'
+        api_url: '{{ slack_api_url }}'
+        title: '{{ template "slack.title" . }}'
+        text: '{{ template "slack.text" . }}'
+        send_resolved: true
+        icon_emoji: ':alert:'
+        parse: 'full'
+
+  # PagerDuty receiver for critical alerts
+  - name: 'pagerduty-critical'
+    pagerduty_configs:
+      - service_key: '{{ pagerduty_service_key }}'
+        description: '{{ template "pagerduty.description" . }}'
+        client: 'Founditure Alertmanager'
+        client_url: '{{ template "pagerduty.client_url" . }}'
+        severity: 'critical'
+        send_resolved: true
+
+# Inhibition rules to prevent alert spam
+inhibit_rules:
+  # Prevent downstream alerts when upstream service is down
+  - source_match:
+      alertname: 'ServiceDown'
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['cluster', 'namespace']
+    # Ensures alerts from the same cluster/namespace are inhibited
+
+# Mute time intervals (if needed)
+mute_time_intervals:
+  - name: maintenance-windows
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '04:00'
+        weekdays: ['saturday', 'sunday']
+        location: 'UTC'
