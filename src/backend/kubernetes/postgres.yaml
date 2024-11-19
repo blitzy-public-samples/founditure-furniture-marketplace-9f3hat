@@ -1,0 +1,149 @@
+# Human Tasks:
+# 1. Verify storage class 'gp2' exists in the cluster
+# 2. Configure network policies for database access
+# 3. Set up automated backup solution
+# 4. Configure monitoring and alerting
+# 5. Review and adjust resource limits based on workload
+# 6. Implement database audit logging
+# 7. Set up PostgreSQL streaming replication
+
+# Requirement: Primary Database (2.2.1 Core Components/Data Storage)
+# Deploys PostgreSQL database with high availability configuration
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: default
+  labels:
+    app: founditure
+    component: database
+spec:
+  selector:
+    app: founditure
+    component: database
+  ports:
+    - port: 5432
+      targetPort: postgresql
+      name: postgresql
+  clusterIP: None # Headless service for StatefulSet
+
+---
+# Requirement: Data Security (5.2 Data Security/5.2.1 Encryption Standards)
+# Persistent Volume Claim for secure data storage
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+  namespace: default
+  labels:
+    app: founditure
+    component: database
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp2
+
+---
+# Requirement: High Availability (2.2.2 Data Storage Solutions)
+# StatefulSet for managed PostgreSQL deployment with replication
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres
+  namespace: default
+  labels:
+    app: founditure
+    component: database
+spec:
+  replicas: 3
+  serviceName: postgres-service
+  selector:
+    matchLabels:
+      app: founditure
+      component: database
+  template:
+    metadata:
+      labels:
+        app: founditure
+        component: database
+    spec:
+      securityContext:
+        fsGroup: 999 # postgres group
+        runAsUser: 999 # postgres user
+      containers:
+        - name: postgres
+          # Requirement: Primary Database (2.2.1 Core Components/Data Storage)
+          image: postgres:15.0
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 5432
+              name: postgresql
+          envFrom:
+            - configMapRef:
+                name: founditure-config
+            - secretRef:
+                name: founditure-secrets
+          env:
+            - name: PGDATA
+              value: /var/lib/postgresql/data/pgdata
+          resources:
+            requests:
+              memory: "2Gi"
+              cpu: "1"
+            limits:
+              memory: "4Gi"
+              cpu: "2"
+          volumeMounts:
+            - name: postgres-data
+              mountPath: /var/lib/postgresql/data
+          # Requirement: High Availability (2.2.2 Data Storage Solutions)
+          # Health checks for database availability
+          livenessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+            initialDelaySeconds: 30
+            periodSeconds: 10
+            timeoutSeconds: 5
+            successThreshold: 1
+            failureThreshold: 3
+          readinessProbe:
+            exec:
+              command:
+                - pg_isready
+                - -U
+                - $(POSTGRES_USER)
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            successThreshold: 1
+            failureThreshold: 3
+          # Requirement: Data Security (5.2 Data Security/5.2.1 Encryption Standards)
+          # Security configurations
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+            readOnlyRootFilesystem: true
+  # Requirement: High Availability (2.2.2 Data Storage Solutions)
+  # Persistent storage configuration for each replica
+  volumeClaimTemplates:
+    - metadata:
+        name: postgres-data
+      spec:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 100Gi
+        storageClassName: gp2
+  # Requirement: High Availability (2.2.2 Data Storage Solutions)
+  # Update strategy for zero-downtime updates
+  updateStrategy:
+    type: RollingUpdate
