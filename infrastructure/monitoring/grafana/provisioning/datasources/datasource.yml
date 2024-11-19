@@ -1,0 +1,77 @@
+# Human Tasks:
+# 1. Verify network connectivity between Grafana and all datasources (Prometheus, Loki, Tempo)
+# 2. Ensure proper authentication is configured if using secured endpoints
+# 3. Validate trace linking configuration between datasources
+# 4. Confirm datasource URLs match your deployment environment
+# 5. Review query timeouts based on expected query complexity
+
+# Grafana version: 9.5.0
+# Prometheus version: 2.45.0
+# Loki version: 2.8.0
+# Tempo version: 2.1.0
+
+# Addresses requirement: System Monitoring - Centralized monitoring system integrating metrics, logs, and traces
+apiVersion: 1
+
+# Clean up any existing datasources before provisioning
+# Addresses requirement: Production Monitoring - Full observability stack integration
+deleteDatasources:
+  - name: Prometheus
+    orgId: 1
+  - name: Loki
+    orgId: 1
+  - name: Tempo
+    orgId: 1
+
+# Define datasources for metrics, logs, and traces
+# Addresses requirements: 
+# - System Monitoring - Comprehensive system observability
+# - Performance Monitoring - Real-time monitoring and visualization
+datasources:
+  # Prometheus datasource for metrics
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    version: 1
+    editable: false
+    jsonData:
+      timeInterval: "15s"  # Matches Prometheus scrape interval
+      queryTimeout: "30s"
+      httpMethod: "POST"
+      exemplarTraceIdDestinations:
+        - name: trace_id
+          datasourceUid: tempo
+
+  # Loki datasource for logs
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    version: 1
+    editable: false
+    jsonData:
+      maxLines: 5000
+      derivedFields:
+        - name: trace_id
+          matcherRegex: "trace_id=(\\w+)"
+          url: "${__value.raw}"
+          datasourceUid: tempo
+
+  # Tempo datasource for distributed tracing
+  - name: Tempo
+    type: tempo
+    access: proxy
+    url: http://tempo:3200
+    version: 1
+    editable: false
+    jsonData:
+      nodeGraph:
+        enabled: true
+      search:
+        enabled: true
+      lokiSearch:
+        datasourceUid: loki
+      serviceMap:
+        datasourceUid: prometheus
