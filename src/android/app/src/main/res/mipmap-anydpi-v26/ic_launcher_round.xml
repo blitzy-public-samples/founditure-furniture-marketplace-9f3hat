@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3. SYSTEM DESIGN/3.1 User Interface Design/3.1.1 Design Specifications):
+  Implements Material Design 3 principles for adaptive launcher icons with proper layering
+- Device Support (3. SYSTEM DESIGN/3.1 User Interface Design/3.1.1 Design Specifications):
+  Supports Android 10+ platform requirements for adaptive icons with round mask configuration
+-->
+
+<!-- Platform Component: android.graphics.drawable.AdaptiveIcon (android-26) -->
+<adaptive-icon xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- 
+    Background layer:
+    - References the background drawable that provides Material Design 3 theming
+    - Scales to fill 108x108dp viewport
+    -->
+    <background android:drawable="@drawable/ic_launcher_background"/>
+
+    <!-- 
+    Foreground layer:
+    - References the furniture-themed icon drawable with dynamic tinting
+    - Positioned within 72x72dp safe zone
+    - Follows Material Design 3 8dp grid system
+    -->
+    <foreground android:drawable="@drawable/ic_launcher_foreground"/>
+</adaptive-icon>
