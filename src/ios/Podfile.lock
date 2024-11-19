@@ -1,0 +1,92 @@
+PODS:
+  - Alamofire (5.8.0)
+  - Firebase/Analytics (10.0.0):
+    - Firebase/Core
+  - Firebase/Auth (10.0.0):
+    - Firebase/CoreOnly
+    - FirebaseAuth (~> 10.0.0)
+  - Firebase/Core (10.0.0):
+    - Firebase/CoreOnly
+    - FirebaseAnalytics (~> 10.0.0)
+  - Firebase/CoreOnly (10.0.0)
+  - Firebase/Messaging (10.0.0):
+    - Firebase/CoreOnly
+    - FirebaseMessaging (~> 10.0.0)
+  - FirebaseAnalytics (10.0.0):
+    - FirebaseCore (~> 10.0.0)
+    - FirebaseInstallations (~> 10.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8.0)
+    - GoogleUtilities/MethodSwizzler (~> 7.8.0)
+    - GoogleUtilities/Network (~> 7.8.0)
+    - GoogleUtilities/UserDefaults (~> 7.8.0)
+    - nanopb (< 2.30910.0, >= 2.30908.0)
+  - FirebaseAuth (10.0.0):
+    - FirebaseCore (~> 10.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8.0)
+    - GTMSessionFetcher/Core (< 4.0, >= 2.1)
+  - FirebaseCore (10.0.0):
+    - GoogleUtilities/Environment (~> 7.8.0)
+    - GoogleUtilities/Logger (~> 7.8.0)
+  - FirebaseInstallations (10.0.0):
+    - FirebaseCore (~> 10.0.0)
+    - GoogleUtilities/Environment (~> 7.8.0)
+    - GoogleUtilities/UserDefaults (~> 7.8.0)
+    - PromisesObjC (~> 2.1)
+  - FirebaseMessaging (10.0.0):
+    - FirebaseCore (~> 10.0.0)
+    - FirebaseInstallations (~> 10.0.0)
+    - GoogleUtilities/AppDelegateSwizzler (~> 7.8.0)
+    - GoogleUtilities/Environment (~> 7.8.0)
+    - GoogleUtilities/Reachability (~> 7.8.0)
+    - GoogleUtilities/UserDefaults (~> 7.8.0)
+  - GoogleMaps (8.0.0):
+    - GoogleMaps/Maps (= 8.0.0)
+  - GoogleMaps/Base (8.0.0)
+  - GoogleMaps/Maps (8.0.0):
+    - GoogleMaps/Base
+  - GoogleMLKit/MLKitCore (4.0.0)
+  - GoogleMLKit/ObjectDetection (4.0.0):
+    - GoogleMLKit/MLKitCore
+    - MLKitObjectDetection (~> 4.0.0)
+  - KeychainAccess (4.2.2)
+  - SDWebImage (5.18.0):
+    - SDWebImage/Core (= 5.18.0)
+  - SDWebImage/Core (5.18.0)
+  - Sentry (8.0.0):
+    - Sentry/Core (= 8.0.0)
+  - Sentry/Core (8.0.0)
+  - Socket.IO-Client-Swift (16.1.0):
+    - Starscream (~> 4.0.4)
+  - Starscream (4.0.4)
+
+DEPENDENCIES:
+  - Alamofire (= 5.8.0)
+  - Firebase/Analytics (= 10.0.0)
+  - Firebase/Auth (= 10.0.0)
+  - Firebase/Messaging (= 10.0.0)
+  - GoogleMaps (= 8.0.0)
+  - GoogleMLKit/ObjectDetection (= 4.0.0)
+  - KeychainAccess (= 4.2.2)
+  - SDWebImage (= 5.18.0)
+  - Sentry (= 8.0.0)
+  - Socket.IO-Client-Swift (= 16.1.0)
+
+SPEC CHECKSUMS:
+  Alamofire: 0e92e751b3e9e66d7982db43919d01f313b8eb91
+  Firebase: 2d33d36533658613c0e8f740dd68d374e1a4f519
+  FirebaseAnalytics: 9921a52739f4ab66099da31b6e0243db78a3ac0a
+  FirebaseAuth: 493382cf533c5c0b7d12725a565c4c82f2718f53
+  FirebaseCore: 97f48a3a567a72f0d2dc44427864f6e5e5d3e86f
+  FirebaseInstallations: 7f1c9ae6bd9df6abe9c74124b38fa8740aba5df4
+  FirebaseMessaging: 732623518591384f61c287e3d8f65294beb7ffb3
+  GoogleMaps: 8939898920281c649150e0af74aa291c60f2e521
+  GoogleMLKit: 2bd0dc6253c4d4f227aad460f69215a504b2980e
+  KeychainAccess: c0c4f7f38f6fc7bbe58f5702e25f7bd2f65abf51
+  SDWebImage: 182830c1e4ee3f15c3974429d796cefc255e1425
+  Sentry: 5c5dd4005f3b7b9765d5a8871232cddfc0d12bce
+  Socket.IO-Client-Swift: d7d4faa066d4c40ab9a955899f9fd5bfd1f7f136
+  Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
+
+PODFILE CHECKSUM: 7a8e62e9f7e99f84c3a5e593e6986c7f9d8e3a8c
+
+COCOAPODS: 1.14.0
