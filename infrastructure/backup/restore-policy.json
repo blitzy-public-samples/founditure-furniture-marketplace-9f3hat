@@ -1,0 +1,132 @@
+{
+  // REQ: Data Recovery - Implements secure restoration with AES-256 encryption and TLS 1.3 for data in transit
+  // REQ: Disaster Recovery - Defines automated recovery mechanisms for system restoration during incidents
+  // REQ: Security Compliance - Ensures restore processes comply with ISO 27001 and data protection regulations
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "backup:StartRestoreJob",
+        "backup:DescribeRestoreJob",
+        "backup:ListRestoreJobs",
+        "backup:GetBackupVaultAccessPolicy",
+        "backup:GetRecoveryPointRestoreMetadata",
+        "backup:StartBackupJob"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "Production",
+          "aws:RequestTag/Application": "Founditure"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rds:RestoreDBInstanceFromDBSnapshot",
+        "dynamodb:RestoreTableFromBackup",
+        "s3:GetObject",
+        "s3:PutObject",
+        "elasticfilesystem:Restore"
+      ],
+      "Resource": [
+        "arn:aws:rds:*:*:db:founditure-*",
+        "arn:aws:dynamodb:*:*:table/founditure-*",
+        "arn:aws:s3:::founditure-*/*",
+        "arn:aws:elasticfilesystem:*:*:file-system/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:Decrypt",
+        "kms:GenerateDataKey"
+      ],
+      "Resource": [
+        "arn:aws:kms:*:*:key/backup-key-id"
+      ]
+    }
+  ],
+  "restore_configuration": {
+    "restore_validation": {
+      "integrity_checks": {
+        "checksum_verification": {
+          "algorithm": "SHA256",
+          "verify_after_restore": true
+        },
+        "size_validation": {
+          "compare_with_source": true,
+          "tolerance_percentage": 1
+        },
+        "encryption_verification": {
+          "verify_kms_key": true,
+          "verify_algorithm": true
+        }
+      },
+      "validation_schedule": {
+        "run_after_restore": true,
+        "verify_data_consistency": true
+      },
+      "failure_handling": {
+        "max_retries": 3,
+        "retry_interval": 300,
+        "alert_on_failure": true,
+        "rollback_on_failure": true
+      }
+    },
+    "restore_resources": {
+      "databases": [
+        {
+          "type": "PostgreSQL",
+          "identifier": "founditure-main-db",
+          "restore_type": "point_in_time",
+          "target_instance": "founditure-restore-db"
+        },
+        {
+          "type": "MongoDB",
+          "identifier": "founditure-message-db",
+          "restore_type": "snapshot",
+          "target_instance": "founditure-restore-mongodb"
+        }
+      ],
+      "storage": [
+        {
+          "type": "S3",
+          "bucket": "founditure-media",
+          "restore_type": "sync",
+          "target_bucket": "founditure-restore-media"
+        },
+        {
+          "type": "EFS",
+          "identifier": "founditure-uploads",
+          "restore_type": "snapshot",
+          "target_filesystem": "founditure-restore-fs"
+        }
+      ]
+    },
+    "encryption": {
+      "algorithm": "AES-256",
+      "kms_key_id": "backup-key-id",
+      "in_transit": "TLS_1_3"
+    },
+    "notifications": {
+      "sns_topic_arn": "arn:aws:sns:region:account:founditure-restore-notifications",
+      "events": [
+        "RESTORE_JOB_STARTED",
+        "RESTORE_JOB_COMPLETED",
+        "RESTORE_JOB_FAILED",
+        "RESTORE_VALIDATION_FAILED",
+        "RESTORE_ROLLBACK_STARTED",
+        "RESTORE_ROLLBACK_COMPLETED"
+      ]
+    },
+    "tags": {
+      "Project": "Founditure",
+      "Environment": "Production",
+      "ManagedBy": "Terraform",
+      "RestoreType": "Automated"
+    }
+  }
+}
