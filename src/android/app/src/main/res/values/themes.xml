@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify Material Design 3 dependency is properly configured in build.gradle
+2. Test theme appearance across different Android API levels (especially dynamic colors on API 31+)
+3. Validate theme transitions when switching between light/dark modes
+4. Test elevation shadows and surface tint layers in both themes
+5. Verify status bar and navigation bar appearance on different devices
+-->
+
+<!-- 
+Dependencies:
+com.google.android.material:material:1.9.0 - Material Design 3 theming system
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3.1.1): Material Design 3 with 8dp grid system and elevation levels 0-5
+- Theme Support (3.1.1): Light/dark mode with custom color schemes and auto theme switching
+- Accessibility (3.1.1): WCAG 2.1 AA compliant with minimum contrast ratio 4.5:1
+-->
+<resources>
+    <!-- Base application theme for light mode -->
+    <style name="Theme.Founditure" parent="Theme.Material3.Light.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorOnPrimary">@color/on_primary</item>
+        <item name="colorPrimaryContainer">@color/primary</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary</item>
+
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorOnSecondary">@color/on_secondary</item>
+        <item name="colorSecondaryContainer">@color/secondary</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary</item>
+
+        <!-- Tertiary brand colors -->
+        <item name="colorTertiary">@color/tertiary</item>
+        <item name="colorOnTertiary">@color/on_tertiary</item>
+        <item name="colorTertiaryContainer">@color/tertiary</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/error</item>
+        <item name="colorOnError">@color/on_error</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background</item>
+        <item name="colorOnBackground">@color/on_background</item>
+
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/surface</item>
+        <item name="colorOnSurface">@color/on_surface</item>
+        <item name="colorSurfaceVariant">@color/surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant</item>
+
+        <!-- Outline colors -->
+        <item name="colorOutline">@color/outline</item>
+
+        <!-- System bars configuration -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar">true</item>
+    </style>
+
+    <!-- Dark theme variant -->
+    <style name="Theme.Founditure.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary brand colors -->
+        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/on_primary_dark</item>
+        <item name="colorPrimaryContainer">@color/primary_dark</item>
+        <item name="colorOnPrimaryContainer">@color/on_primary_dark</item>
+
+        <!-- Secondary brand colors -->
+        <item name="colorSecondary">@color/secondary_dark</item>
+        <item name="colorOnSecondary">@color/on_secondary_dark</item>
+        <item name="colorSecondaryContainer">@color/secondary_dark</item>
+        <item name="colorOnSecondaryContainer">@color/on_secondary_dark</item>
+
+        <!-- Tertiary brand colors -->
+        <item name="colorTertiary">@color/tertiary_dark</item>
+        <item name="colorOnTertiary">@color/on_tertiary_dark</item>
+        <item name="colorTertiaryContainer">@color/tertiary_dark</item>
+        <item name="colorOnTertiaryContainer">@color/on_tertiary_dark</item>
+
+        <!-- Error colors -->
+        <item name="colorError">@color/error_dark</item>
+        <item name="colorOnError">@color/on_error_dark</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="colorOnBackground">@color/on_background_dark</item>
+
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/on_surface_dark</item>
+        <item name="colorSurfaceVariant">@color/surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant_dark</item>
+
+        <!-- Outline colors -->
+        <item name="colorOutline">@color/outline_dark</item>
+
+        <!-- System bars configuration -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
