@@ -1,0 +1,36 @@
+{
+  "images": [
+    {
+      "idiom": "universal",
+      "filename": "profile.png",
+      "scale": "1x",
+      "size": "24x24pt"
+    },
+    {
+      "idiom": "universal", 
+      "filename": "profile@2x.png",
+      "scale": "2x",
+      "size": "48x48pt"
+    },
+    {
+      "idiom": "universal",
+      "filename": "profile@3x.png", 
+      "scale": "3x",
+      "size": "72x72pt"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "xcode"
+  },
+  "properties": {
+    "template-rendering-intent": "template",
+    "preserves-vector-representation": true,
+    "compression-type": "automatic",
+    "provides-namespace": false
+  },
+  "accessibility": {
+    "traits": "image",
+    "label": "Profile"
+  }
+}
