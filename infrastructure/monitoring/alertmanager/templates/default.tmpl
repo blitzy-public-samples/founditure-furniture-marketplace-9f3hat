@@ -1,0 +1,155 @@
+{{/* 
+Human Tasks:
+1. Verify Slack workspace and channel configurations in Alertmanager
+2. Configure PagerDuty service keys and routing keys
+3. Test notifications with different severity levels to ensure proper formatting
+4. Verify emoji rendering in your Slack workspace
+5. Ensure alert labels match your service naming conventions
+*/}}
+
+{{/* 
+Addresses requirements:
+- System Monitoring: Standardized alert templates with rich context
+- Security Monitoring: Security alert notifications with critical context
+- Production Monitoring: 24/7 monitoring with detailed troubleshooting info
+*/}}
+
+{{/* Default title template for Slack notifications */}}
+{{ define "slack.title" }}
+{{- $severity := .CommonLabels.severity | toLower -}}
+{{- if eq .Status "firing" -}}
+  {{- if eq $severity "critical" -}}🔴{{- else -}}⚠️{{- end -}}
+{{- else -}}
+  ✅
+{{- end -}}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 
+{{- if .GroupLabels.alertname }}{{ .GroupLabels.alertname }}{{ end -}}
+{{- if .GroupLabels.service }} - {{ .GroupLabels.service }}{{ end -}}
+{{- if gt (len .CommonLabels) (len .GroupLabels) }} (
+  {{- with .CommonLabels.Remove .GroupLabels.Names -}}
+    {{- $labels := .SortedPairs -}}
+    {{- range $index, $label := $labels -}}
+      {{- if $index }}, {{ end -}}
+      {{- $label.Name }}={{ $label.Value -}}
+    {{- end -}}
+  {{- end -}}
+)
+{{- end -}}
+{{ end }}
+
+{{/* Detailed message template for Slack notifications */}}
+{{ define "slack.text" }}
+{{- range .Alerts }}
+*Alert Details:*
+{{- if .Annotations.summary }}
+• *Summary:* {{ .Annotations.summary }}
+{{- end }}
+{{- if .Annotations.description }}
+• *Description:* {{ .Annotations.description }}
+{{- end }}
+
+*Additional Context:*
+{{- range .Labels.SortedPairs }}
+• *{{ .Name | title }}:* `{{ .Value }}`
+{{- end }}
+
+{{- if .GeneratorURL }}
+• *Prometheus Graph:* {{ .GeneratorURL }}
+{{- end }}
+
+{{- if .Annotations.runbook_url }}
+• *Runbook:* {{ .Annotations.runbook_url }}
+{{- end }}
+{{ end }}
+
+*Triggered:* {{ .StartsAt | reReplaceAll "([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).*" "$1-$2-$3 $4:$5:$6 UTC" }}
+{{ end }}
+
+{{/* Comprehensive description template for PagerDuty incidents */}}
+{{ define "pagerduty.description" }}
+{{ template "slack.title" . }}
+
+{{- range .Alerts }}
+{{- if .Annotations.description }}
+Description: {{ .Annotations.description }}
+{{- end }}
+
+Impact: {{ .Labels.severity | toUpper }} severity incident
+{{- if .Labels.service }}
+Affected Service: {{ .Labels.service }}
+{{- end }}
+
+Alert Details:
+{{- range .Labels.SortedPairs }}
+- {{ .Name }}: {{ .Value }}
+{{- end }}
+
+{{- if .GeneratorURL }}
+Prometheus Graph: {{ .GeneratorURL }}
+{{- end }}
+
+{{- if .Annotations.runbook_url }}
+Runbook: {{ .Annotations.runbook_url }}
+{{- end }}
+
+Timestamp: {{ .StartsAt | reReplaceAll "([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).*" "$1-$2-$3 $4:$5:$6 UTC" }}
+---
+{{ end }}
+{{ end }}
+
+{{/* Common email subject template */}}
+{{ define "email.subject" }}
+[{{ .Status | toUpper }}{{ if eq .Status "firing" }}:{{ .Alerts.Firing | len }}{{ end }}] 
+{{- if .GroupLabels.alertname }}{{ .GroupLabels.alertname }}{{ end -}}
+{{- if .GroupLabels.service }} - {{ .GroupLabels.service }}{{ end -}}
+{{ end }}
+
+{{/* Detailed HTML email body template */}}
+{{ define "email.html" }}
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: Arial, sans-serif; }
+    .alert { margin: 20px 0; padding: 15px; border-radius: 4px; }
+    .critical { background-color: #ffd7d7; border: 1px solid #ff0000; }
+    .warning { background-color: #fff3d7; border: 1px solid #ffa500; }
+    .resolved { background-color: #d7ffd7; border: 1px solid #00ff00; }
+    .details { margin-left: 20px; }
+    .label { font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>{{ template "slack.title" . }}</h2>
+  
+  {{- range .Alerts }}
+  <div class="alert {{ .Labels.severity }}">
+    {{- if .Annotations.summary }}
+    <h3>{{ .Annotations.summary }}</h3>
+    {{- end }}
+    
+    {{- if .Annotations.description }}
+    <p>{{ .Annotations.description }}</p>
+    {{- end }}
+    
+    <div class="details">
+      <h4>Alert Details:</h4>
+      {{- range .Labels.SortedPairs }}
+      <p><span class="label">{{ .Name }}:</span> {{ .Value }}</p>
+      {{- end }}
+      
+      {{- if .GeneratorURL }}
+      <p><span class="label">Graph:</span> <a href="{{ .GeneratorURL }}">View in Prometheus</a></p>
+      {{- end }}
+      
+      {{- if .Annotations.runbook_url }}
+      <p><span class="label">Runbook:</span> <a href="{{ .Annotations.runbook_url }}">View Runbook</a></p>
+      {{- end }}
+    </div>
+  </div>
+  {{ end }}
+  
+  <p><small>Triggered at {{ .StartsAt | reReplaceAll "([0-9]{4})-([0-9]{2})-([0-9]{2})T([0-9]{2}):([0-9]{2}):([0-9]{2}).*" "$1-$2-$3 $4:$5:$6 UTC" }}</small></p>
+</body>
+</html>
+{{ end }}
