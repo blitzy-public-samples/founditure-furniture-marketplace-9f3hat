@@ -1,0 +1,107 @@
+{
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "provides-namespace": true
+  },
+  "colors": [
+    {
+      "idiom": "universal",
+      "filename": "primary.colorset"
+    },
+    {
+      "idiom": "universal", 
+      "filename": "onPrimary.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "primaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onPrimaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "secondary.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onSecondary.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "secondaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onSecondaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "tertiary.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onTertiary.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "tertiaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onTertiaryContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "error.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onError.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "errorContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "onErrorContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surface.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceDim.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceBright.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceContainerLowest.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceContainerLow.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceContainer.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceContainerHigh.colorset"
+    },
+    {
+      "idiom": "universal",
+      "filename": "surfaceContainerHighest.colorset"
+    }
+  ]
+}
