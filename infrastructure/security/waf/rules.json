@@ -1,0 +1,273 @@
+{
+  // Human Tasks:
+  // 1. Review and adjust rate limits based on production traffic patterns
+  // 2. Configure allowed countries list based on business requirements
+  // 3. Verify file upload size limits align with application requirements
+  // 4. Add specific IP addresses to blacklist/whitelist based on security needs
+  // 5. Confirm CloudWatch log retention period meets compliance requirements
+
+  // Requirement: Network Security
+  // Location: 5. SECURITY CONSIDERATIONS/5.3.1 Network Security
+  "name": "founditure-waf-rules",
+  "description": "WAF configuration for Founditure application implementing OWASP security controls",
+  "schemaVersion": "2.0",
+  "webACLId": "${web_acl_arn}",
+
+  // Requirement: API Security
+  // Location: 5. SECURITY CONSIDERATIONS/5.3.3 Security Compliance
+  "rules": {
+    "managedRules": [
+      {
+        "name": "CommonRuleSet",
+        "priority": 1,
+        "overrideAction": "none",
+        "statement": {
+          "managedRuleGroupStatement": {
+            "vendorName": "AWS",
+            "name": "AWSManagedRulesCommonRuleSet"
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "CommonRuleSetMetrics"
+        }
+      },
+      {
+        "name": "KnownBadInputs",
+        "priority": 2,
+        "overrideAction": "none",
+        "statement": {
+          "managedRuleGroupStatement": {
+            "vendorName": "AWS",
+            "name": "AWSManagedRulesKnownBadInputsRuleSet"
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "KnownBadInputsMetrics"
+        }
+      },
+      {
+        "name": "SQLiRuleSet",
+        "priority": 3,
+        "overrideAction": "none",
+        "statement": {
+          "managedRuleGroupStatement": {
+            "vendorName": "AWS",
+            "name": "AWSManagedRulesSQLiRuleSet"
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "SQLiRuleSetMetrics"
+        }
+      }
+    ],
+
+    // Requirement: Network Security
+    // Location: 5. SECURITY CONSIDERATIONS/5.3.1 Network Security
+    "rateBasedRules": [
+      {
+        "name": "IPRateLimit",
+        "priority": 4,
+        "rateLimit": 2000,
+        "aggregateKeyType": "IP",
+        "action": {
+          "block": {}
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "IPRateLimitMetrics"
+        }
+      }
+    ],
+
+    "geoMatchRules": [
+      {
+        "name": "GeoBlockRule",
+        "priority": 5,
+        "action": {
+          "block": {}
+        },
+        "statement": {
+          "geoMatchStatement": {
+            "countryCodes": ["excluded_countries"]
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "GeoBlockMetrics"
+        }
+      }
+    ],
+
+    // Requirement: API Security
+    // Location: 5. SECURITY CONSIDERATIONS/5.3.3 Security Compliance
+    "customRules": [
+      {
+        "name": "APIRateLimit",
+        "priority": 6,
+        "action": {
+          "block": {}
+        },
+        "statement": {
+          "rateBasedStatement": {
+            "limit": 100,
+            "aggregateKeyType": "IP",
+            "scopeDownStatement": {
+              "byteMatchStatement": {
+                "fieldToMatch": {
+                  "uriPath": {}
+                },
+                "positionalConstraint": "STARTS_WITH",
+                "searchString": "/api/",
+                "textTransformations": [
+                  {
+                    "priority": 1,
+                    "type": "NONE"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "APIRateLimitMetrics"
+        }
+      },
+      {
+        "name": "FileUploadProtection",
+        "priority": 7,
+        "action": {
+          "block": {}
+        },
+        "statement": {
+          "andStatement": {
+            "statements": [
+              {
+                "byteMatchStatement": {
+                  "fieldToMatch": {
+                    "uriPath": {}
+                  },
+                  "positionalConstraint": "CONTAINS",
+                  "searchString": "/api/listings/",
+                  "textTransformations": [
+                    {
+                      "priority": 1,
+                      "type": "NONE"
+                    }
+                  ]
+                }
+              },
+              {
+                "sizeConstraintStatement": {
+                  "fieldToMatch": {
+                    "body": {}
+                  },
+                  "comparisonOperator": "GT",
+                  "size": 10485760,
+                  "textTransformations": [
+                    {
+                      "priority": 1,
+                      "type": "NONE"
+                    }
+                  ]
+                }
+              }
+            ]
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "FileUploadProtectionMetrics"
+        }
+      },
+      {
+        "name": "AuthEndpointProtection",
+        "priority": 8,
+        "action": {
+          "block": {}
+        },
+        "statement": {
+          "rateBasedStatement": {
+            "limit": 5,
+            "aggregateKeyType": "IP",
+            "scopeDownStatement": {
+              "byteMatchStatement": {
+                "fieldToMatch": {
+                  "uriPath": {}
+                },
+                "positionalConstraint": "STARTS_WITH",
+                "searchString": "/api/auth/",
+                "textTransformations": [
+                  {
+                    "priority": 1,
+                    "type": "NONE"
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "visibilityConfig": {
+          "sampledRequestsEnabled": true,
+          "cloudWatchMetricsEnabled": true,
+          "metricName": "AuthEndpointProtectionMetrics"
+        }
+      }
+    ]
+  },
+
+  // Requirement: Network Security
+  // Location: 5. SECURITY CONSIDERATIONS/5.3.1 Network Security
+  "ipSets": {
+    "blacklist": {
+      "name": "founditure-blacklist",
+      "description": "Blacklisted IP addresses",
+      "ipAddressVersion": "IPV4",
+      "addresses": []
+    },
+    "whitelist": {
+      "name": "founditure-whitelist",
+      "description": "Whitelisted IP addresses",
+      "ipAddressVersion": "IPV4",
+      "addresses": []
+    }
+  },
+
+  "defaultAction": {
+    "allow": {},
+    "customResponse": {
+      "responseCode": 403,
+      "responseBody": "{\"error\": \"Access denied by WAF rules\"}"
+    }
+  },
+
+  // Requirement: Cloud Security
+  // Location: 6.2 CLOUD SERVICES/AWS Service Stack
+  "logging": {
+    "enabled": true,
+    "destination": "cloudwatch",
+    "logGroup": "/aws/waf/founditure",
+    "retentionDays": 30,
+    "sampleRequests": true
+  },
+
+  "metrics": {
+    "namespace": "Founditure/WAF",
+    "dimensions": [
+      "Rule",
+      "WebACL",
+      "Region"
+    ],
+    "samplingRate": 100
+  }
+}
