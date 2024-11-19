@@ -1,0 +1,82 @@
+# Human Tasks:
+# 1. Verify environment-specific values for each deployment environment
+# 2. Configure service discovery DNS entries in cluster
+# 3. Validate rate limiting settings for each environment
+# 4. Review logging levels for each environment
+# 5. Confirm resource limits align with environment capacity
+# 6. Ensure CORS settings meet security requirements
+# 7. Verify Redis cluster configuration in each environment
+
+# Requirement: Environment Configuration (6.1 Deployment Environment/Environment Specifications)
+# - Configurable settings for different deployment environments
+# - Environment-specific configuration management
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: founditure-config
+  namespace: default
+  labels:
+    app: founditure
+    environment: ${ENV}
+    managed-by: kubernetes
+    component: configuration
+
+data:
+  # Requirement: Environment Configuration (6.1 Deployment Environment)
+  # Core environment settings
+  NODE_ENV: ${ENV}
+  API_PORT: "3000"
+
+  # Requirement: Microservices Architecture (2.2.1 Core Components)
+  # Service discovery and port configurations
+  SERVICE_PORTS: |
+    {
+      "AUTH": "3001",
+      "LISTING": "3002",
+      "AI": "3003",
+      "MESSAGING": "3004",
+      "LOCATION": "3005",
+      "GAMIFICATION": "3006",
+      "NOTIFICATION": "3007",
+      "ANALYTICS": "3008"
+    }
+
+  # Requirement: Security Architecture (2.5 Security Architecture)
+  # Non-sensitive database configuration
+  DATABASE_CONFIG: |
+    {
+      "POSTGRES_DB": "founditure",
+      "POSTGRES_PORT": "5432",
+      "POSTGRES_MAX_CONNECTIONS": "100",
+      "POSTGRES_IDLE_TIMEOUT": "10000"
+    }
+
+  # Requirement: Microservices Architecture (2.2.1 Core Components)
+  # Redis configuration for caching and session management
+  REDIS_CONFIG: |
+    {
+      "HOST": "redis-service.default.svc.cluster.local",
+      "PORT": "6379",
+      "MAX_CONNECTIONS": "50",
+      "IDLE_TIMEOUT": "10000",
+      "ENABLE_TLS": "false",
+      "KEY_PREFIX": "founditure"
+    }
+
+  # Requirement: Security Architecture (2.5 Security Architecture)
+  # Security and rate limiting configurations
+  CORS_ORIGIN: "*"
+  LOG_LEVEL: "info"
+  RATE_LIMIT_WINDOW: "60000"
+  RATE_LIMIT_MAX: "100"
+
+  # Requirement: Microservices Architecture (2.2.1 Core Components)
+  # Application-specific settings
+  IMAGE_UPLOAD_MAX_SIZE: "10485760"
+  LOCATION_UPDATE_INTERVAL: "300000"
+
+  # Requirement: Microservices Architecture (2.2.1 Core Components)
+  # Gamification system configuration
+  POINTS_PER_LISTING: "20"
+  POINTS_PER_COLLECTION: "30"
+  ACHIEVEMENT_CHECK_INTERVAL: "86400000"
