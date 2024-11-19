@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify dark theme appearance on various Android devices and OS versions
+2. Test dynamic color adaptation in dark mode with different wallpapers
+3. Validate WCAG 2.1 AA contrast compliance in dark theme using Material Theme Builder
+4. Test system bars appearance and transparency on different device configurations
+-->
+
+<!-- 
+Dependencies:
+com.google.android.material:material:1.9.0 - Material Design 3 theming system
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3.1.1): Material Design 3 with dynamic color system implementation
+- Theme Support (3.1.1): Dark mode theme variant with custom color schemes
+- Accessibility (3.1.1): WCAG 2.1 AA compliant color contrast ratios (4.5:1 minimum)
+-->
+<resources>
+    <!-- Base application dark theme -->
+    <style name="Theme.Founditure" parent="Theme.Material3.Dark.NoActionBar">
+        <!-- Primary brand color -->
+        <item name="colorPrimary">@color/primary_dark</item>
+        <item name="colorOnPrimary">@color/on_primary_dark</item>
+
+        <!-- Secondary brand color -->
+        <item name="colorSecondary">@color/secondary_dark</item>
+        <item name="colorOnSecondary">@color/on_secondary_dark</item>
+
+        <!-- Tertiary brand color -->
+        <item name="colorTertiary">@color/tertiary_dark</item>
+        <item name="colorOnTertiary">@color/on_tertiary_dark</item>
+
+        <!-- Error color -->
+        <item name="colorError">@color/error_dark</item>
+        <item name="colorOnError">@color/on_error_dark</item>
+
+        <!-- Background colors -->
+        <item name="android:colorBackground">@color/background_dark</item>
+        <item name="colorOnBackground">@color/on_background_dark</item>
+
+        <!-- Surface colors -->
+        <item name="colorSurface">@color/surface_dark</item>
+        <item name="colorOnSurface">@color/on_surface_dark</item>
+        <item name="colorSurfaceVariant">@color/surface_variant_dark</item>
+        <item name="colorOnSurfaceVariant">@color/on_surface_variant_dark</item>
+
+        <!-- Outline color -->
+        <item name="colorOutline">@color/outline_dark</item>
+
+        <!-- System bars configuration -->
+        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="android:navigationBarColor">@android:color/transparent</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar">false</item>
+    </style>
+</resources>
