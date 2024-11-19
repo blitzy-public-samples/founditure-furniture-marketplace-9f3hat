@@ -1,0 +1,151 @@
+# Requirement: CI/CD Pipeline
+# Location: 6.5 CI/CD PIPELINE
+# GitHub Actions workflow for iOS app build, test, and deployment
+
+name: iOS CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/ios/**'
+      - '.github/workflows/ios.yml'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'src/ios/**'
+      - '.github/workflows/ios.yml'
+
+env:
+  XCODE_VERSION: '14.0'
+  RUBY_VERSION: '3.0'
+  DEVELOPER_APP_ID: ${{ secrets.APPLE_DEVELOPER_APP_ID }}
+  DEVELOPER_APP_IDENTIFIER: ${{ secrets.APPLE_DEVELOPER_APP_IDENTIFIER }}
+  PROVISIONING_PROFILE_SPECIFIER: ${{ secrets.PROVISIONING_PROFILE_SPECIFIER }}
+  TEMP_KEYCHAIN_PASSWORD: ${{ secrets.TEMP_KEYCHAIN_PASSWORD }}
+  APPLE_KEYCHAIN_PASSWORD: ${{ secrets.APPLE_KEYCHAIN_PASSWORD }}
+  WORKSPACE: Founditure.xcworkspace
+  SCHEME: Founditure
+
+jobs:
+  # Requirement: Development Environment Setup
+  # Location: APPENDICES/A.1 Development Environment Setup
+  build:
+    name: Build iOS App
+    runs-on: macos-latest
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Ruby Environment
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+      
+      - name: Install Fastlane and CocoaPods
+        run: |
+          gem install bundler
+          bundle install
+          gem install cocoapods -v 1.12.1
+      
+      - name: Setup Build Environment
+        run: |
+          cd src/ios
+          bundle exec fastlane setup
+      
+      - name: Cache CocoaPods Dependencies
+        uses: actions/cache@v3
+        with:
+          path: src/ios/Pods
+          key: ${{ runner.os }}-pods-${{ hashFiles('src/ios/Podfile.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-pods-
+      
+      - name: Install CocoaPods Dependencies
+        run: |
+          cd src/ios
+          pod install
+      
+      # Requirement: Testing Strategy
+      # Location: APPENDICES/A.2 Testing Strategy
+      - name: Run Tests
+        run: |
+          cd src/ios
+          bundle exec fastlane test
+      
+      - name: Build App (Debug)
+        run: |
+          cd src/ios
+          bundle exec fastlane build configuration:Debug
+      
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            src/ios/build/Founditure.ipa
+            src/ios/build/test_output/reports
+            src/ios/build/test_output/coverage
+          retention-days: 14
+
+  # Requirement: CI/CD Pipeline
+  # Location: 6.5 CI/CD PIPELINE
+  deploy_testflight:
+    name: Deploy to TestFlight
+    needs: build
+    runs-on: macos-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: Setup Ruby Environment
+        uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ env.RUBY_VERSION }}
+      
+      - name: Install Dependencies
+        run: |
+          gem install bundler
+          bundle install
+          gem install cocoapods -v 1.12.1
+      
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+          path: src/ios/build
+      
+      - name: Setup Keychain
+        run: |
+          security create-keychain -p ${{ env.TEMP_KEYCHAIN_PASSWORD }} build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p ${{ env.TEMP_KEYCHAIN_PASSWORD }} build.keychain
+          security set-keychain-settings -t 3600 -l ~/Library/Keychains/build.keychain
+      
+      - name: Import Certificates
+        run: |
+          echo ${{ secrets.APPLE_DISTRIBUTION_CERTIFICATE_BASE64 }} | base64 --decode > distribution.p12
+          security import distribution.p12 -k build.keychain -P ${{ secrets.APPLE_CERTIFICATE_PASSWORD }} -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k ${{ env.TEMP_KEYCHAIN_PASSWORD }} build.keychain
+      
+      - name: Deploy to TestFlight
+        env:
+          APPLE_ID: ${{ secrets.APPLE_ID }}
+          TEAM_ID: ${{ secrets.TEAM_ID }}
+          ITC_TEAM_ID: ${{ secrets.ITC_TEAM_ID }}
+          BETA_FEEDBACK_EMAIL: ${{ secrets.BETA_FEEDBACK_EMAIL }}
+        run: |
+          cd src/ios
+          bundle exec fastlane beta
+      
+      - name: Clean Up Keychain
+        if: always()
+        run: |
+          security delete-keychain build.keychain
