@@ -1,0 +1,61 @@
+{
+  "images": [
+    {
+      "idiom": "universal",
+      "filename": "home.svg",
+      "scale": "1x"
+    },
+    {
+      "idiom": "universal", 
+      "filename": "home@2x.svg",
+      "scale": "2x"
+    },
+    {
+      "idiom": "universal",
+      "filename": "home@3x.svg", 
+      "scale": "3x"
+    },
+    {
+      "idiom": "universal",
+      "filename": "home-dark.svg",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "scale": "1x"
+    },
+    {
+      "idiom": "universal",
+      "filename": "home-dark@2x.svg",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "scale": "2x"
+    },
+    {
+      "idiom": "universal",
+      "filename": "home-dark@3x.svg",
+      "appearances": [
+        {
+          "appearance": "luminosity",
+          "value": "dark"
+        }
+      ],
+      "scale": "3x"
+    }
+  ],
+  "info": {
+    "version": 1,
+    "author": "xcode"
+  },
+  "properties": {
+    "template-rendering-intent": "template",
+    "preserves-vector-representation": true,
+    "compression-type": "automatic"
+  }
+}
