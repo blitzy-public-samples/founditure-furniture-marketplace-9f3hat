@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify touch target size in layouts using this icon (should be wrapped in minimum 48dp container)
+2. Test icon appearance across different Android versions (10+) and screen densities
+3. Validate icon color adaptation in both light and dark themes
+4. Ensure content description is properly read by screen readers in implemented layouts
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3.1.1): Material Design 3 icon with 24dp size and regular stroke weight
+- Theme Support (3.1.1): Dynamic color support using ?attr/colorControlNormal
+- Accessibility (3.1.1): Auto-mirroring support and content description integration
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24.0"
+    android:viewportHeight="24.0"
+    android:tint="?attr/colorControlNormal"
+    android:autoMirrored="true">
+    
+    <path
+        android:fillColor="@android:color/white"
+        android:pathData="M10,20V14H14V20H19V12H22L12,3L2,12H5V20H10Z"
+        android:fillType="evenOdd"/>
+</vector>
