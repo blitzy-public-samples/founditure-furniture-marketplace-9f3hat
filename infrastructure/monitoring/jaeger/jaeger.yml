@@ -1,0 +1,116 @@
+# Human Tasks:
+# 1. Verify network connectivity between Jaeger collector and Tempo backend
+# 2. Ensure all service endpoints can reach Jaeger collector ports
+# 3. Validate service names match deployed microservices
+# 4. Review sampling rates based on production load
+# 5. Confirm proper DNS resolution for service name mappings
+
+# Jaeger Collector version: 1.45.0
+
+# Collector configuration
+# Addresses requirement: System Monitoring - Distributed tracing implementation
+collector:
+  host: "0.0.0.0"
+  ports:
+    grpc: 14267
+    thrift-http: 14268
+    thrift-binary: 14250
+  tags:
+    environment: production
+    cluster: founditure-prod
+    region: us-east-1
+  zipkin:
+    http-port: 9411
+
+# Sampling configuration
+# Addresses requirement: Performance Monitoring - Real-time tracing and monitoring
+sampling:
+  strategies:
+    default:
+      type: probabilistic
+      param: 1.0
+    service_strategies:
+      - service: api-gateway
+        type: probabilistic
+        param: 1.0
+      - service: auth-service
+        type: probabilistic
+        param: 0.8
+      - service: listing-service
+        type: probabilistic
+        param: 0.8
+      - service: ai-service
+        type: probabilistic
+        param: 0.5
+
+# Storage configuration with Tempo backend
+# Addresses requirement: Production Monitoring - 24/7 production monitoring
+storage:
+  type: grpc-plugin
+  grpc-storage:
+    server: tempo:9095
+    tls:
+      enabled: false
+    connection-timeout: 5s
+    retry:
+      max-attempts: 3
+      initial-interval: 100ms
+
+# Service name mappings for consistent naming
+service_mappings:
+  - from: api-gateway
+    to: founditure-api-gateway
+  - from: auth-service
+    to: founditure-auth-service
+  - from: listing-service
+    to: founditure-listing-service
+  - from: ai-service
+    to: founditure-ai-service
+
+# OTLP/gRPC configuration for trace ingestion
+otlp:
+  enabled: true
+  grpc:
+    host: "0.0.0.0"
+    port: 4317
+
+# Admin configuration
+admin:
+  http:
+    host: "0.0.0.0"
+    port: 14269
+
+# Metrics configuration
+metrics:
+  backend: prometheus
+  prometheus:
+    server_url: "http://prometheus:9090"
+
+# Resource limits
+processor:
+  jaeger-binary:
+    workers: 50
+    queue-size: 2000
+  jaeger-http:
+    workers: 50
+    queue-size: 2000
+
+# Health check configuration
+health_check:
+  http:
+    host: "0.0.0.0"
+    port: 14269
+
+# TLS configuration (disabled for internal communication)
+tls:
+  enabled: false
+
+# Logging configuration
+logging:
+  level: info
+  format: json
+
+# Memory configuration
+memory:
+  max_traces: 50000
+  traces_age_limit: 72h
