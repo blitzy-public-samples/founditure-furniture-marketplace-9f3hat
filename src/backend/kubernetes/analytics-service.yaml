@@ -1,0 +1,95 @@
+# Human Tasks:
+# 1. Verify container image version matches release requirements
+# 2. Confirm resource quotas align with cluster capacity
+# 3. Review health check endpoints implementation
+# 4. Validate network policies for service communication
+# 5. Ensure monitoring and logging agents are configured
+# 6. Verify pod disruption budget configuration
+# 7. Review horizontal pod autoscaling settings
+
+---
+# Requirement: Environment Configuration (6.1 Deployment Environment/Environment Specifications)
+# Deployment configuration for Analytics microservice
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-service
+  namespace: default
+  labels:
+    app: founditure
+    service: analytics
+  annotations:
+    description: "Analytics service for metrics collection and reporting"
+spec:
+  # Requirement: System Monitoring (2.4.1 System Monitoring)
+  # High availability configuration with multiple replicas
+  replicas: 2
+  selector:
+    matchLabels:
+      app: founditure
+      service: analytics
+  template:
+    metadata:
+      labels:
+        app: founditure
+        service: analytics
+    spec:
+      containers:
+        - name: analytics-service
+          image: founditure/analytics-service:latest
+          ports:
+            - containerPort: 3008
+              name: http
+          # Requirement: Environment Configuration (6.1 Deployment Environment)
+          # Configuration and secrets mounting
+          envFrom:
+            - configMapRef:
+                name: founditure-config
+            - secretRef:
+                name: founditure-secrets
+          # Requirement: System Monitoring (2.4.1 System Monitoring)
+          # Resource limits and requests for container
+          resources:
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+          # Health monitoring configuration
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: http
+            initialDelaySeconds: 30
+            periodSeconds: 15
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: http
+            initialDelaySeconds: 15
+            periodSeconds: 10
+
+---
+# Requirement: Environment Configuration (6.1 Deployment Environment/Environment Specifications)
+# Service configuration for Analytics microservice
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: default
+  labels:
+    app: founditure
+    service: analytics
+  annotations:
+    description: "Internal service endpoint for analytics microservice"
+spec:
+  type: ClusterIP
+  ports:
+    - port: 3008
+      targetPort: http
+      protocol: TCP
+      name: http
+  selector:
+    app: founditure
+    service: analytics
