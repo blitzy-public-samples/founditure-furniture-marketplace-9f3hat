@@ -1,0 +1,101 @@
+# Human Tasks:
+# 1. Verify that all referenced metrics exist in your Prometheus scrape configurations
+# 2. Ensure Prometheus has appropriate permissions to scrape all target services
+# 3. Validate that the evaluation and scrape intervals align with your infrastructure capacity
+# 4. Confirm PostgreSQL and RabbitMQ exporters are properly configured
+
+# Addresses requirements:
+# - System Monitoring: Centralized metrics collection for all microservices and infrastructure
+# - Performance Monitoring: 24/7 production monitoring with full metrics tracking
+
+# Global evaluation interval: 15s
+# Global scrape interval: 15s
+
+groups:
+  # API Performance Metrics
+  - name: api_metrics
+    rules:
+      - record: api:request_duration_seconds:p90
+        expr: histogram_quantile(0.90, sum(rate(http_request_duration_seconds_bucket[5m])) by (le, service))
+        labels:
+          aggregation: p90
+      
+      - record: api:error_rate:ratio
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) by (service) / sum(rate(http_requests_total[5m])) by (service)
+        labels:
+          metric: error_rate
+
+  # Service Health and Resource Metrics
+  - name: service_metrics
+    rules:
+      - record: service:uptime:ratio
+        expr: avg_over_time(up[24h])
+        labels:
+          metric: uptime
+      
+      - record: service:cpu_usage:percent
+        expr: rate(process_cpu_seconds_total[5m]) * 100
+        labels:
+          metric: cpu
+      
+      - record: service:memory_usage:percent
+        expr: process_resident_memory_bytes / node_memory_MemTotal_bytes * 100
+        labels:
+          metric: memory
+
+  # AI/ML Performance Metrics
+  - name: ai_metrics
+    rules:
+      - record: ai:recognition_accuracy:avg
+        expr: avg_over_time(furniture_recognition_accuracy_percent[1h])
+        labels:
+          metric: accuracy
+      
+      - record: ai:processing_time:p95
+        expr: histogram_quantile(0.95, sum(rate(furniture_recognition_duration_seconds_bucket[5m])) by (le))
+        labels:
+          aggregation: p95
+
+  # Business KPI Metrics
+  - name: business_metrics
+    rules:
+      - record: business:listings:total
+        expr: sum(increase(furniture_listings_created_total[24h]))
+        labels:
+          metric: listings
+      
+      - record: business:recovery_rate:ratio
+        expr: sum(increase(furniture_items_recovered_total[24h])) / sum(increase(furniture_listings_created_total[24h]))
+        labels:
+          metric: recovery_rate
+      
+      - record: business:active_users:total
+        expr: sum(increase(user_activity_total[24h])) by (activity_type)
+        labels:
+          metric: user_activity
+
+  # Database Performance Metrics
+  - name: database_metrics
+    rules:
+      - record: db:connection_utilization:ratio
+        expr: sum(pg_stat_activity_count) by (datname) / pg_settings_max_connections
+        labels:
+          metric: connections
+      
+      - record: db:query_time:p95
+        expr: histogram_quantile(0.95, sum(rate(pg_query_duration_seconds_bucket[5m])) by (le, datname))
+        labels:
+          aggregation: p95
+
+  # Message Queue Metrics
+  - name: messaging_metrics
+    rules:
+      - record: messaging:queue_size:avg
+        expr: avg_over_time(rabbitmq_queue_messages_ready[5m])
+        labels:
+          metric: queue_size
+      
+      - record: messaging:processing_rate:avg
+        expr: rate(rabbitmq_queue_messages_delivered_total[5m])
+        labels:
+          metric: processing_rate
