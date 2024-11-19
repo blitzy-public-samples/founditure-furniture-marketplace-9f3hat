@@ -1,0 +1,174 @@
+# Human Tasks:
+# 1. Verify all service endpoints are accessible from Prometheus
+# 2. Confirm alertmanager endpoint is correctly configured
+# 3. Review and adjust scrape intervals based on system load
+# 4. Ensure proper network access between Prometheus and targets
+# 5. Validate alert rules are properly loaded
+
+# Prometheus version: 2.45.0
+
+# Global configurations
+# Addresses requirement: System Monitoring - Centralized metrics collection
+global:
+  scrape_interval: 15s     # How frequently to scrape targets
+  evaluation_interval: 15s  # How frequently to evaluate rules
+  scrape_timeout: 10s      # How long until a scrape request times out
+
+# Rule files for alerts and recording rules
+# Addresses requirements: Security Monitoring - Real-time monitoring and alerting
+rule_files:
+  - "rules/alert.rules"
+  - "rules/recording.rules"
+
+# Scrape configurations
+# Addresses requirement: Production Monitoring - 24/7 production monitoring
+scrape_configs:
+  # API Gateway metrics
+  - job_name: 'api-gateway'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['api-gateway:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Authentication Service metrics
+  - job_name: 'auth-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['auth-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Listing Service metrics
+  - job_name: 'listing-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['listing-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # AI Service metrics
+  - job_name: 'ai-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['ai-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Messaging Service metrics
+  - job_name: 'messaging-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['messaging-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Location Service metrics
+  - job_name: 'location-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['location-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Gamification Service metrics
+  - job_name: 'gamification-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['gamification-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Notification Service metrics
+  - job_name: 'notification-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['notification-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+  # Analytics Service metrics
+  - job_name: 'analytics-service'
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: ['analytics-service:9090']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        regex: '(.*):.*'
+        replacement: '${1}'
+
+# Alertmanager configuration
+# Addresses requirement: Security Monitoring - Real-time monitoring and alerting
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      scheme: http
+      timeout: 10s
+      api_version: v2
+
+# Additional scrape configurations for service discovery
+scrape_configs:
+  # Node Exporter metrics for host-level monitoring
+  - job_name: 'node'
+    static_configs:
+      - targets: ['node-exporter:9100']
+
+  # cAdvisor metrics for container monitoring
+  - job_name: 'cadvisor'
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # Prometheus self-monitoring
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+# Storage configuration
+storage:
+  tsdb:
+    retention_time: 15d
+    retention_size: 50GB
+
+# Remote write configuration for long-term storage
+remote_write:
+  - url: "http://remote-storage:9201/write"
+    remote_timeout: 30s
+    queue_config:
+      capacity: 10000
+      max_shards: 200
+      max_samples_per_send: 500
+      batch_send_deadline: 5s
+      min_backoff: 30ms
+      max_backoff: 100ms
+
+# Remote read configuration for historical data
+remote_read:
+  - url: "http://remote-storage:9201/read"
+    read_recent: true
+    remote_timeout: 1m
