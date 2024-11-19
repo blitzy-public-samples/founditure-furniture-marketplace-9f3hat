@@ -1,0 +1,140 @@
+# Human Tasks:
+# 1. Verify MongoDB storage class availability in cluster
+# 2. Configure network policies for MongoDB access
+# 3. Set up monitoring and alerts for MongoDB cluster
+# 4. Review backup and disaster recovery procedures
+# 5. Validate MongoDB encryption key rotation process
+# 6. Configure audit logging for database operations
+# 7. Verify compliance with data residency requirements
+
+---
+# Requirement: Data Storage Solutions (2.2.2 Data Storage Solutions)
+# MongoDB StatefulSet for persistent, replicated document storage
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mongodb
+  namespace: default
+  labels:
+    app: founditure
+    component: mongodb
+spec:
+  # Requirement: High Availability (2.1 High-Level Architecture)
+  # 3-node replication for high availability and automatic failover
+  serviceName: mongodb
+  replicas: 3
+  selector:
+    matchLabels:
+      app: founditure
+      component: mongodb
+  template:
+    metadata:
+      labels:
+        app: founditure
+        component: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        # MongoDB 6.0 with encryption and replication support
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+          name: mongodb
+        env:
+        # Requirement: Data Security (5.2.1 Encryption Standards)
+        # Secure credentials from Kubernetes Secrets
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: founditure-secrets
+              key: MONGODB_USER
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: founditure-secrets
+              key: MONGODB_PASSWORD
+        # MongoDB encryption configuration
+        - name: MONGODB_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: founditure-secrets
+              key: AES_ENCRYPTION_KEY
+        # Enable encryption at rest
+        - name: MONGODB_ENCRYPT_DATA_AT_REST
+          value: "true"
+        # Enable TLS/SSL for in-transit encryption
+        - name: MONGODB_TLS_MODE
+          value: "requireTLS"
+        command:
+        - mongod
+        args:
+        - "--replSet"
+        - "founditure-rs"
+        - "--bind_ip"
+        - "0.0.0.0"
+        - "--enableEncryption"
+        - "--encryptionKeyFile"
+        - "/etc/mongodb/encryption-key"
+        - "--tlsMode"
+        - "requireTLS"
+        volumeMounts:
+        - name: mongodb-data
+          mountPath: /data/db
+        - name: encryption-key
+          mountPath: /etc/mongodb
+          readOnly: true
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          tcpSocket:
+            port: 27017
+          initialDelaySeconds: 5
+          periodSeconds: 10
+      volumes:
+      - name: encryption-key
+        secret:
+          secretName: founditure-secrets
+          items:
+          - key: AES_ENCRYPTION_KEY
+            path: encryption-key
+  volumeClaimTemplates:
+  - metadata:
+      name: mongodb-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+
+---
+# Requirement: High Availability (2.1 High-Level Architecture)
+# Headless service for MongoDB StatefulSet pod discovery
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+  namespace: default
+  labels:
+    app: founditure
+    component: mongodb
+spec:
+  ports:
+  - port: 27017
+    targetPort: 27017
+    name: mongodb
+  selector:
+    app: founditure
+    component: mongodb
+  # Headless service for StatefulSet pod discovery
+  clusterIP: None
