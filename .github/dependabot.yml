@@ -1,0 +1,123 @@
+# Human Tasks:
+# 1. Verify team member handles in reviewers sections match actual GitHub usernames
+# 2. Confirm access permissions for specified target branches
+# 3. Validate timezone setting matches team's primary working hours
+# 4. Ensure specified team labels exist in GitHub repository
+
+# Addresses requirements:
+# - Development Environment Setup: Automated updates for iOS 14+, Android SDK 31+, Node.js environments
+# - Security Architecture: Automated vulnerability patching across system components
+# - CI/CD Pipeline: Integrated dependency management for consistent deployments
+
+version: 2
+updates:
+  # Backend (Node.js) dependency updates
+  - package-ecosystem: "npm"
+    directory: "/src/backend"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "backend"
+    reviewers:
+      - "backend-team"
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+    versioning-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+        update-type: "semver:minor"
+
+  # Android app dependency updates
+  - package-ecosystem: "gradle"
+    directory: "/src/android"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "android"
+    reviewers:
+      - "android-team"
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+    versioning-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+        update-type: "semver:minor"
+
+  # iOS app dependency updates
+  - package-ecosystem: "cocoapods"
+    directory: "/src/ios"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "ios"
+    reviewers:
+      - "ios-team"
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+    versioning-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+        update-type: "semver:minor"
+
+  # GitHub Actions workflow dependency updates
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "ci-cd"
+    reviewers:
+      - "devops-team"
+    commit-message:
+      prefix: "ci"
+      prefix-development: "ci"
+      include: "scope"
+
+  # Infrastructure (Terraform) dependency updates
+  - package-ecosystem: "terraform"
+    directory: "/infrastructure/terraform"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+      time: "09:00"
+      timezone: "UTC"
+    target-branch: "develop"
+    labels:
+      - "dependencies"
+      - "infrastructure"
+    reviewers:
+      - "devops-team"
+    commit-message:
+      prefix: "fix"
+      prefix-development: "chore"
+      include: "scope"
+    versioning-strategy: "auto"
+    allow:
+      - dependency-type: "direct"
+        update-type: "semver:minor"
