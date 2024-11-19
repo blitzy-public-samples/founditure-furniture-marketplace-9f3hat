@@ -1,0 +1,52 @@
+{
+  "info": {
+    "author": "xcode",
+    "version": 1
+  },
+  "properties": {
+    "provides-namespace": true,
+    "color-management": {
+      "color-spaces": [
+        "sRGB",
+        "display-P3"
+      ]
+    },
+    "target-device": "universal",
+    "target-platform": [
+      "ios",
+      "ipados"
+    ]
+  },
+  "folders": [
+    {
+      "path": "Colors",
+      "type": "group",
+      "includes": [
+        "*.colorset"
+      ],
+      "properties": {
+        "provides-namespace": true
+      }
+    },
+    {
+      "path": "AppIcon",
+      "type": "group",
+      "includes": [
+        "*.appiconset"
+      ],
+      "properties": {
+        "provides-namespace": true
+      }
+    },
+    {
+      "path": "Images",
+      "type": "group",
+      "includes": [
+        "*.imageset"
+      ],
+      "properties": {
+        "provides-namespace": true
+      }
+    }
+  ]
+}
