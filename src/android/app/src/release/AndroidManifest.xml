@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Requirements addressed:
+- Security (5.3 Security Protocols/5.3.5 Mobile Security): 
+  Implementation of OWASP MASVS security requirements including secure file sharing, 
+  network security, and backup restrictions
+- Device Support (1.3 Scope/Implementation Boundaries):
+  Production environment configuration for Android 10+ devices with scoped storage
+- Performance (2.1 High-Level Architecture):
+  Release-specific optimizations including native library extraction and network security
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <application
+        android:debuggable="false"
+        android:allowBackup="false"
+        android:fullBackupContent="false"
+        android:usesCleartextTraffic="false"
+        android:extractNativeLibs="false"
+        android:hasFragileUserData="true"
+        android:requestLegacyExternalStorage="false"
+        android:networkSecurityConfig="@xml/network_security_config"
+        tools:replace="android:debuggable,android:allowBackup,android:fullBackupContent">
+
+        <!-- Requirements addressed: Security (5.3.5 Mobile Security)
+             Secure file sharing configuration for captured images -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
+
+</manifest>
