@@ -1,0 +1,196 @@
+# Human Tasks:
+# 1. Verify Kong Gateway plugins are installed and configured in cluster
+# 2. Configure TLS certificates for HTTPS termination
+# 3. Set up network policies for ingress/egress traffic
+# 4. Review and adjust resource limits based on load testing
+# 5. Configure monitoring and alerting for gateway metrics
+# 6. Validate WAF rules and security policies
+# 7. Set up backup and disaster recovery procedures
+
+# Requirement: API Gateway (2.2.1 Core Components/API Gateway)
+# Kong Gateway deployment configuration for request routing and API management
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-gateway
+  namespace: default
+  labels:
+    app: founditure
+    component: api-gateway
+  annotations:
+    kubernetes.io/description: "Kong API Gateway for Founditure platform"
+    kong-version: "3.4"
+spec:
+  # Requirement: High Availability (2.4 Cross-Cutting Concerns/Deployment Architecture)
+  # Horizontal scaling with multiple replicas for high availability
+  replicas: 3
+  selector:
+    matchLabels:
+      app: founditure
+      component: api-gateway
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: founditure
+        component: api-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8100"
+    spec:
+      # Requirement: Security Architecture (2.5 Security Architecture/Security Controls)
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      containers:
+        - name: api-gateway
+          image: kong/kong-gateway:3.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: proxy
+              containerPort: 8000
+            - name: proxy-ssl
+              containerPort: 8443
+            - name: admin
+              containerPort: 8001
+            - name: admin-ssl
+              containerPort: 8444
+            - name: metrics
+              containerPort: 8100
+          env:
+            - name: KONG_DATABASE
+              value: "off"
+            - name: KONG_PROXY_ACCESS_LOG
+              value: "/dev/stdout"
+            - name: KONG_ADMIN_ACCESS_LOG
+              value: "/dev/stdout"
+            - name: KONG_PROXY_ERROR_LOG
+              value: "/dev/stderr"
+            - name: KONG_ADMIN_ERROR_LOG
+              value: "/dev/stderr"
+            # Load environment configuration from ConfigMap
+            - name: KONG_ADMIN_LISTEN
+              value: "0.0.0.0:8001, 0.0.0.0:8444 ssl"
+            - name: NODE_ENV
+              valueFrom:
+                configMapKeyRef:
+                  name: founditure-config
+                  key: NODE_ENV
+            # Load JWT authentication secret
+            - name: KONG_JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: founditure-secrets
+                  key: JWT_SECRET
+          resources:
+            limits:
+              cpu: "1000m"
+              memory: "1Gi"
+            requests:
+              cpu: "500m"
+              memory: "512Mi"
+          # Health checks for container lifecycle management
+          livenessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+              scheme: HTTP
+            initialDelaySeconds: 30
+            timeoutSeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /status
+              port: 8001
+              scheme: HTTP
+            initialDelaySeconds: 15
+            timeoutSeconds: 5
+            periodSeconds: 5
+          volumeMounts:
+            - name: kong-config
+              mountPath: /kong/declarative
+      volumes:
+        - name: kong-config
+          configMap:
+            name: founditure-config
+      # Ensure pods are distributed across nodes
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                    - key: component
+                      operator: In
+                      values:
+                        - api-gateway
+                topologyKey: kubernetes.io/hostname
+
+---
+# Requirement: API Gateway (2.2.1 Core Components/API Gateway)
+# Service configuration for API Gateway access
+apiVersion: v1
+kind: Service
+metadata:
+  name: api-gateway-service
+  namespace: default
+  labels:
+    app: founditure
+    component: api-gateway
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8100"
+spec:
+  type: ClusterIP
+  ports:
+    - name: proxy
+      port: 80
+      targetPort: proxy
+      protocol: TCP
+    - name: proxy-ssl
+      port: 443
+      targetPort: proxy-ssl
+      protocol: TCP
+    - name: admin
+      port: 8001
+      targetPort: admin
+      protocol: TCP
+    - name: metrics
+      port: 8100
+      targetPort: metrics
+      protocol: TCP
+  selector:
+    app: founditure
+    component: api-gateway
+
+---
+# Requirement: Security Architecture (2.5 Security Architecture/Security Controls)
+# Kong Gateway configuration for rate limiting and security
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: rate-limiting
+  namespace: default
+config:
+  minute: 100
+  limit_by: consumer
+  policy: local
+
+---
+# WAF configuration for security controls
+apiVersion: configuration.konghq.com/v1
+kind: KongPlugin
+metadata:
+  name: request-validator
+  namespace: default
+config:
+  body_schema: []
+  allowed_content_types:
+    - application/json
+  strip_path: true
+  preserve_host: false
