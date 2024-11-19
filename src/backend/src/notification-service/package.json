@@ -1,0 +1,163 @@
+// Third-party imports with versions
+import express from 'express'; // v4.18.x
+import cors from 'cors'; // v2.8.x
+import helmet from 'helmet'; // v7.0.x
+import compression from 'compression'; // v1.7.x
+import * as admin from 'firebase-admin'; // v11.x
+import dotenv from 'dotenv'; // v16.x
+import winston from 'winston'; // v3.10.x
+import Joi from 'joi'; // v17.x
+import { Server } from 'http';
+
+// Load environment variables
+dotenv.config();
+
+// Human Tasks:
+// 1. Create and configure Firebase service account credentials JSON
+// 2. Set up environment variables in .env file:
+//    - PORT: Server port number
+//    - NODE_ENV: Environment (development/production)
+//    - FIREBASE_CREDENTIALS: Path to Firebase credentials JSON
+//    - LOG_LEVEL: Logging level (info/debug/error)
+// 3. Configure CORS allowed origins for production
+// 4. Set up SSL certificates for production deployment
+// 5. Configure monitoring and alerting systems
+
+// Environment variables validation schema
+const envSchema = Joi.object({
+  PORT: Joi.number().default(3000),
+  NODE_ENV: Joi.string().valid('development', 'production').default('development'),
+  FIREBASE_CREDENTIALS: Joi.string().required(),
+  LOG_LEVEL: Joi.string().valid('error', 'warn', 'info', 'debug').default('info')
+}).unknown();
+
+// Logger configuration
+const logger = winston.createLogger({
+  level: process.env.LOG_LEVEL || 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+  transports: [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.colorize(),
+        winston.format.simple()
+      )
+    })
+  ]
+});
+
+export class NotificationServer {
+  private app: express.Application;
+  private logger: winston.Logger;
+  private server: Server | null = null;
+
+  constructor() {
+    // Requirement 2.2.1: Initialize notification service components
+    this.app = express();
+    this.logger = logger;
+    this.setupMiddleware();
+    this.initializeFirebase();
+  }
+
+  private setupMiddleware(): void {
+    // Security middleware
+    this.app.use(helmet());
+    
+    // CORS configuration
+    this.app.use(cors({
+      origin: process.env.NODE_ENV === 'production' 
+        ? ['https://founditure.com', /\.founditure\.com$/]
+        : '*',
+      methods: ['GET', 'POST', 'PUT', 'DELETE'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+      credentials: true,
+      maxAge: 86400 // 24 hours
+    }));
+
+    // Response compression
+    this.app.use(compression());
+
+    // Body parsing
+    this.app.use(express.json({ limit: '1mb' }));
+    this.app.use(express.urlencoded({ extended: true }));
+
+    // Request logging
+    this.app.use((req, res, next) => {
+      this.logger.info(`${req.method} ${req.url}`, {
+        ip: req.ip,
+        userAgent: req.get('user-agent')
+      });
+      next();
+    });
+  }
+
+  private initializeFirebase(): void {
+    try {
+      const credentials = JSON.parse(process.env.FIREBASE_CREDENTIALS || '');
+      admin.initializeApp({
+        credential: admin.credential.cert(credentials),
+        projectId: credentials.project_id
+      });
+      this.logger.info('Firebase Admin SDK initialized successfully');
+    } catch (error) {
+      this.logger.error('Failed to initialize Firebase Admin SDK', { error });
+      throw error;
+    }
+  }
+
+  public async start(): Promise<void> {
+    try {
+      // Validate environment variables
+      const { error, value } = envSchema.validate(process.env);
+      if (error) {
+        throw new Error(`Environment validation error: ${error.message}`);
+      }
+
+      // Start the server
+      const port = value.PORT;
+      this.server = this.app.listen(port, () => {
+        this.logger.info(`Notification server started on port ${port}`, {
+          env: value.NODE_ENV,
+          logLevel: value.LOG_LEVEL
+        });
+      });
+
+      // Handle server errors
+      this.server.on('error', (error: Error) => {
+        this.logger.error('Server error occurred', { error });
+        throw error;
+      });
+
+    } catch (error) {
+      this.logger.error('Failed to start notification server', { error });
+      throw error;
+    }
+  }
+
+  public async stop(): Promise<void> {
+    try {
+      if (this.server) {
+        // Close HTTP server
+        await new Promise<void>((resolve, reject) => {
+          this.server?.close((err) => {
+            if (err) reject(err);
+            else resolve();
+          });
+        });
+
+        // Clean up Firebase Admin SDK
+        await admin.app().delete();
+
+        this.logger.info('Notification server stopped successfully');
+      }
+    } catch (error) {
+      this.logger.error('Error while stopping notification server', { error });
+      throw error;
+    }
+  }
+}
+
+// Export the NotificationServer class for use in other modules
+export default NotificationServer;
