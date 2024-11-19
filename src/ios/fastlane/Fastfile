@@ -1,0 +1,223 @@
+# fastlane version: 2.217.0
+# cocoapods-core version: 1.12.1
+# fastlane-plugin-firebase_app_distribution version: 0.4.0
+# xcode version: 14.0+
+
+# HUMAN TASKS:
+# 1. Install Xcode Command Line Tools and ensure Xcode 14.0+ is installed
+# 2. Configure Firebase project and obtain google-services.json
+# 3. Set up Apple Developer Portal and App Store Connect access
+# 4. Configure match repository for code signing
+# 5. Verify TestFlight internal testing group is set up
+# 6. Ensure all required certificates and provisioning profiles are created in Apple Developer Portal
+
+default_platform(:ios)
+
+# Import app configuration from Appfile
+# Requirement: iOS App Distribution
+# Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+import("Appfile")
+
+# Global workspace and scheme configuration
+WORKSPACE = "Founditure.xcworkspace"
+SCHEME = "Founditure"
+BUILD_PATH = "./build"
+
+platform :ios do
+  # Requirement: CI/CD Pipeline
+  # Location: 6.5 CI/CD PIPELINE/Pipeline Stages
+  desc "Setup development environment"
+  lane :setup do
+    # Clean previous build artifacts
+    clear_derived_data
+    sh("rm -rf #{BUILD_PATH}")
+    
+    # Install dependencies
+    cocoapods(
+      clean_install: true,
+      repo_update: true
+    )
+    
+    # Configure code signing
+    match(
+      type: "development",
+      readonly: true,
+      app_identifier: app_identifier,
+      team_id: team_id
+    )
+    
+    # Verify app identifier configuration
+    verify_build_config(
+      xcodeproj: "Founditure.xcodeproj",
+      scheme: SCHEME,
+      build_configuration: "Debug"
+    )
+    
+    # Setup Firebase distribution plugin
+    firebase_app_distribution_setup
+  end
+  
+  # Requirement: Testing Strategy
+  # Location: A.2 Testing Strategy
+  desc "Run test suites"
+  lane :test do
+    # Clean test artifacts
+    clear_derived_data
+    
+    # Run test suite
+    scan(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      device: "iPhone 14",
+      clean: true,
+      code_coverage: true,
+      result_bundle: true,
+      output_directory: "#{BUILD_PATH}/test_output",
+      fail_build: true
+    )
+    
+    # Process test results
+    trainer(
+      path: "#{BUILD_PATH}/test_output",
+      output_directory: "#{BUILD_PATH}/test_output/reports"
+    )
+    
+    # Verify minimum code coverage
+    xcov(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      output_directory: "#{BUILD_PATH}/test_output/coverage",
+      minimum_coverage_percentage: 80.0
+    )
+  end
+  
+  # Requirement: CI/CD Pipeline
+  # Location: 6.5 CI/CD PIPELINE/Pipeline Stages
+  desc "Build application"
+  lane :build do |options|
+    configuration = options[:configuration]
+    
+    # Clean build directory
+    sh("rm -rf #{BUILD_PATH}")
+    
+    # Install dependencies
+    cocoapods(
+      clean_install: true
+    )
+    
+    # Configure code signing
+    match(
+      type: configuration.downcase == "release" ? "appstore" : "development",
+      readonly: true,
+      app_identifier: app_identifier,
+      team_id: team_id
+    )
+    
+    # Build application
+    gym(
+      workspace: WORKSPACE,
+      scheme: SCHEME,
+      configuration: configuration,
+      clean: true,
+      output_directory: BUILD_PATH,
+      output_name: "Founditure.ipa",
+      export_method: configuration.downcase == "release" ? "app-store" : "development",
+      export_options: {
+        provisioningProfiles: {
+          app_identifier => "match #{configuration.downcase == 'release' ? 'AppStore' : 'Development'} #{app_identifier}"
+        }
+      }
+    )
+  end
+  
+  # Requirement: iOS App Distribution
+  # Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+  desc "Deploy to TestFlight"
+  lane :beta do
+    # Build release version
+    build(configuration: "Release")
+    
+    # Upload to TestFlight
+    pilot(
+      app_identifier: app_identifier,
+      skip_waiting_for_build_processing: true,
+      distribute_external: false,
+      changelog: create_changelog,
+      beta_app_description: "Founditure iOS Beta Build",
+      beta_app_feedback_email: ENV["BETA_FEEDBACK_EMAIL"],
+      skip_submission: true,
+      ipa: "#{BUILD_PATH}/Founditure.ipa"
+    )
+    
+    # Upload debug symbols
+    upload_symbols_to_crashlytics(
+      dsym_path: "#{BUILD_PATH}/Founditure.app.dSYM.zip",
+      gsp_path: "./Founditure/GoogleService-Info.plist"
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully deployed new beta build to TestFlight!",
+      success: true
+    )
+  end
+  
+  # Requirement: iOS App Distribution
+  # Location: 2. SYSTEM ARCHITECTURE/2.1 High-Level Architecture/Mobile Applications
+  desc "Deploy to App Store"
+  lane :release do
+    # Build release version
+    build(configuration: "Release")
+    
+    # Verify metadata and screenshots
+    precheck(
+      app_identifier: app_identifier,
+      team_id: team_id
+    )
+    
+    # Upload to App Store
+    deliver(
+      app_identifier: app_identifier,
+      skip_screenshots: true,
+      skip_metadata: false,
+      force: true,
+      submit_for_review: true,
+      automatic_release: false,
+      submission_information: {
+        add_id_info_uses_idfa: false,
+        export_compliance_uses_encryption: false,
+        content_rights_contains_third_party_content: false
+      },
+      ipa: "#{BUILD_PATH}/Founditure.ipa"
+    )
+    
+    # Upload debug symbols
+    upload_symbols_to_crashlytics(
+      dsym_path: "#{BUILD_PATH}/Founditure.app.dSYM.zip",
+      gsp_path: "./Founditure/GoogleService-Info.plist"
+    )
+    
+    # Notify team
+    slack(
+      message: "Successfully submitted new build to App Store Review!",
+      success: true
+    )
+  end
+  
+  private_lane :create_changelog do
+    changelog = changelog_from_git_commits(
+      merge_commit_filtering: "exclude_merges",
+      pretty: "- %s",
+      date_format: "short",
+      number_of_commits: 10
+    )
+    return changelog
+  end
+  
+  private_lane :verify_build_config do |options|
+    UI.user_error!("App identifier mismatch!") unless app_identifier == get_info_plist_value(
+      path: "#{options[:xcodeproj]}/#{options[:scheme]}/Info.plist",
+      key: "CFBundleIdentifier"
+    )
+  end
+end
