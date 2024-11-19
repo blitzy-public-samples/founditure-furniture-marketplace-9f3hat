@@ -1,0 +1,106 @@
+# Human Tasks:
+# 1. Verify container image registry credentials are configured
+# 2. Configure network policies for service communication
+# 3. Set up monitoring and alerts for the listing service
+# 4. Review resource quotas for the namespace
+# 5. Validate service mesh integration if applicable
+# 6. Configure horizontal pod autoscaling thresholds
+# 7. Verify logging and tracing configuration
+
+---
+# Requirement: Core Components (2.2.1 Core Components/Technical Decisions)
+# Deployment configuration for the listing service microservice
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: listing-service
+  namespace: default
+  labels:
+    app: founditure
+    component: listing-service
+spec:
+  # Requirement: High Availability (6.1 Deployment Environment/Environment Specifications)
+  # Multiple replicas for high availability and load distribution
+  replicas: 3
+  selector:
+    matchLabels:
+      app: founditure
+      component: listing-service
+  template:
+    metadata:
+      labels:
+        app: founditure
+        component: listing-service
+    spec:
+      containers:
+      - name: listing-service
+        image: founditure/listing-service:latest
+        ports:
+        - containerPort: 3002
+          name: http
+        env:
+        # Environment configuration from ConfigMap
+        - name: NODE_ENV
+          valueFrom:
+            configMapKeyRef:
+              name: founditure-config
+              key: NODE_ENV
+        # MongoDB connection string for persistent storage
+        - name: MONGODB_URI
+          value: mongodb://mongodb-service:27017/founditure
+        # Service port from ConfigMap
+        - name: PORT
+          valueFrom:
+            configMapKeyRef:
+              name: founditure-config
+              key: SERVICE_PORTS.LISTING
+        resources:
+          requests:
+            memory: 512Mi
+            cpu: 250m
+          limits:
+            memory: 1Gi
+            cpu: 500m
+        # Health monitoring configuration
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: http
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: http
+          initialDelaySeconds: 15
+          periodSeconds: 5
+  # Requirement: Deployment Architecture (2.4.2 Deployment Architecture)
+  # Zero-downtime rolling update strategy
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+
+---
+# Requirement: Core Components (2.2.1 Core Components/Technical Decisions)
+# Internal service for listing microservice
+apiVersion: v1
+kind: Service
+metadata:
+  name: listing-service
+  namespace: default
+  labels:
+    app: founditure
+    component: listing-service
+spec:
+  # Internal ClusterIP service type for security
+  type: ClusterIP
+  ports:
+  - port: 3002
+    targetPort: http
+    protocol: TCP
+    name: http
+  selector:
+    app: founditure
+    component: listing-service
