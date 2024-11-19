@@ -1,0 +1,90 @@
+# Android Studio and IntelliJ IDEA files
+*.iml
+.idea/
+.idea/caches/
+.idea/libraries/
+.idea/modules.xml
+.idea/workspace.xml
+.idea/navEditor.xml
+.idea/assetWizardSettings.xml
+
+# Gradle files
+.gradle/
+build/
+/captures/
+.externalNativeBuild/
+.cxx/
+
+# Local configuration files
+local.properties
+
+# OS-specific files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Build outputs and release artifacts
+*.apk
+*.aab
+*.aar
+output.json
+*.log
+
+# Firebase configuration
+google-services.json
+
+# Debug and analysis files
+*.hprof
+.navigation/
+lint/
+lint-results.*
+
+# Build variants output directories
+app/release/
+app/debug/
+app/*/release/
+app/*/debug/
+
+# Generated files
+bin/
+gen/
+out/
+
+# NDK
+obj/
+
+# Android Studio Navigation editor temp files
+.navigation/
+
+# Android Studio captures folder
+captures/
+
+# Keystore files
+*.jks
+*.keystore
+
+# External native build folder
+.externalNativeBuild/
+
+# Google Services (e.g. APIs or Firebase)
+google-services.json
+
+# Version control
+vcs.xml
+
+# Android Profiling
+*.hprof
+
+# Crashlytics plugin
+crashlytics.properties
+crashlytics-build.properties
+fabric.properties
+
+# Android Studio generated
+*.ap_
+*.dex
+*.class
