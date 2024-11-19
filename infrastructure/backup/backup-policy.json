@@ -1,0 +1,133 @@
+{
+  // REQ: Data Protection - Implements AES-256 encryption for data at rest and TLS 1.3 for data in transit
+  // REQ: Business Continuity - Defines automated backup mechanisms for disaster recovery
+  // REQ: Security Compliance - Ensures backup processes comply with ISO 27001, GDPR, and data protection regulations
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "backup:CreateBackupPlan",
+        "backup:CreateBackupSelection",
+        "backup:StartBackupJob",
+        "backup:DescribeBackupJob",
+        "backup:ListBackupJobs",
+        "backup:CreateBackupVault",
+        "backup:DescribeBackupVault",
+        "backup:PutBackupVaultAccessPolicy"
+      ],
+      "Resource": "*",
+      "Condition": {
+        "StringEquals": {
+          "aws:RequestTag/Environment": "Production",
+          "aws:RequestTag/Application": "Founditure"
+        }
+      }
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "rds:CreateDBSnapshot",
+        "dynamodb:CreateBackup",
+        "s3:PutObject",
+        "s3:GetObject",
+        "elasticfilesystem:Backup"
+      ],
+      "Resource": [
+        "arn:aws:rds:*:*:db:founditure-*",
+        "arn:aws:dynamodb:*:*:table/founditure-*",
+        "arn:aws:s3:::founditure-*/*",
+        "arn:aws:elasticfilesystem:*:*:file-system/*"
+      ]
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "kms:Encrypt",
+        "kms:Decrypt",
+        "kms:GenerateDataKey"
+      ],
+      "Resource": [
+        "arn:aws:kms:*:*:key/backup-key-id"
+      ]
+    }
+  ],
+  "backup_configuration": {
+    "backup_schedule": {
+      "full_backup": "0 0 * * *",
+      "incremental_backup": "0 */6 * * *",
+      "retention_period": 30
+    },
+    "backup_resources": {
+      "databases": [
+        {
+          "type": "PostgreSQL",
+          "identifier": "founditure-main-db",
+          "backup_type": "snapshot"
+        },
+        {
+          "type": "MongoDB",
+          "identifier": "founditure-message-db",
+          "backup_type": "snapshot"
+        }
+      ],
+      "storage": [
+        {
+          "type": "S3",
+          "bucket": "founditure-media",
+          "backup_type": "sync"
+        },
+        {
+          "type": "EFS",
+          "identifier": "founditure-uploads",
+          "backup_type": "snapshot"
+        }
+      ]
+    },
+    "encryption": {
+      "algorithm": "AES-256",
+      "kms_key_id": "backup-key-id",
+      "in_transit": "TLS_1_3"
+    },
+    "backup_validation": {
+      "integrity_checks": {
+        "checksum_verification": {
+          "algorithm": "SHA256",
+          "verify_after_transfer": true
+        },
+        "size_validation": {
+          "compare_with_source": true,
+          "tolerance_percentage": 1
+        },
+        "encryption_verification": {
+          "verify_kms_key": true,
+          "verify_algorithm": true
+        }
+      },
+      "validation_schedule": {
+        "run_after_backup": true,
+        "periodic_validation": "0 12 * * *"
+      },
+      "failure_handling": {
+        "max_retries": 3,
+        "retry_interval": 300,
+        "alert_on_failure": true
+      }
+    },
+    "notifications": {
+      "sns_topic_arn": "arn:aws:sns:region:account:founditure-backup-notifications",
+      "events": [
+        "BACKUP_JOB_STARTED",
+        "BACKUP_JOB_COMPLETED",
+        "BACKUP_JOB_FAILED",
+        "BACKUP_VALIDATION_FAILED"
+      ]
+    },
+    "tags": {
+      "Project": "Founditure",
+      "Environment": "Production",
+      "ManagedBy": "Terraform",
+      "BackupType": "Automated"
+    }
+  }
+}
