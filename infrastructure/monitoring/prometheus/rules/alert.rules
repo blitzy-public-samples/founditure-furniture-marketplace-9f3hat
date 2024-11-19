@@ -1,0 +1,119 @@
+# Human Tasks:
+# 1. Verify that all service names in job labels match your deployed services
+# 2. Adjust thresholds based on your specific SLAs and requirements
+# 3. Configure notification channels in Alertmanager for different severity levels
+# 4. Set up proper team labels for routing alerts to correct teams
+# 5. Review and adjust evaluation intervals if needed
+
+# Prometheus version: 2.45.0
+
+groups:
+  # Service Availability Monitoring
+  # Addresses requirement: System Monitoring - Centralized metrics collection
+  - name: service_availability
+    rules:
+      - alert: ServiceDown
+        expr: up == 0
+        for: 1m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute"
+
+  # API Performance Monitoring
+  # Addresses requirement: Production Monitoring - 24/7 production monitoring
+  - name: api_performance
+    rules:
+      - alert: HighLatency
+        expr: histogram_quantile(0.90, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High latency on {{ $labels.service }}"
+          description: "90th percentile latency is above 2 seconds for {{ $labels.service }}"
+
+      - alert: HighErrorRate
+        expr: sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) > 0.05
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High error rate on {{ $labels.service }}"
+          description: "Error rate is above 5% for {{ $labels.service }}"
+
+  # AI Service Monitoring
+  # Addresses requirement: System Monitoring - Centralized metrics collection
+  - name: ai_service
+    rules:
+      - alert: LowRecognitionAccuracy
+        expr: avg_over_time(furniture_recognition_accuracy_percent[10m]) < 85
+        for: 10m
+        labels:
+          severity: warning
+          team: ml
+        annotations:
+          summary: "Low furniture recognition accuracy"
+          description: "Recognition accuracy has dropped below 85% for 10 minutes"
+
+  # System Resources Monitoring
+  # Addresses requirement: Production Monitoring - Full metrics collection
+  - name: system_resources
+    rules:
+      - alert: HighCPUUsage
+        expr: rate(process_cpu_seconds_total[5m]) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is above 85% for 5 minutes"
+
+      - alert: HighMemoryUsage
+        expr: process_resident_memory_bytes / node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is above 90% for 5 minutes"
+
+  # Database Monitoring
+  # Addresses requirement: System Monitoring - Infrastructure components
+  - name: database
+    rules:
+      - alert: HighDatabaseConnections
+        expr: sum(pg_stat_activity_count) by (datname) > 100
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of database connections"
+          description: "Database connection count exceeds 100 for 2 minutes"
+
+  # Message Queue Monitoring
+  # Addresses requirement: System Monitoring - Infrastructure components
+  - name: messaging
+    rules:
+      - alert: MessageQueueBacklog
+        expr: sum(rabbitmq_queue_messages_ready) by (queue) > 1000
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Large message queue backlog"
+          description: "Message queue size exceeds 1000 for 5 minutes"
+
+  # Security Monitoring
+  # Addresses requirement: Security Monitoring - Real-time monitoring and alerting
+  - name: security
+    rules:
+      - alert: HighRateOfFailedLogins
+        expr: sum(rate(auth_failed_login_attempts_total[5m])) > 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "High rate of failed login attempts"
+          description: "More than 10 failed login attempts per minute for 2 minutes"
