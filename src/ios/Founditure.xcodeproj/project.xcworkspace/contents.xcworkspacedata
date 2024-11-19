@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Xcode Workspace Configuration
+Minimum Xcode Version: 14.0
+Recommended Xcode Version: 14.3
+Build System: New Build System
+Requirements Addressed:
+- iOS Development Environment (Technical Specification/4. Technology Stack/A.1)
+- Development Tools (Technical Specification/Appendices/A.1)
+-->
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "self:Founditure.xcodeproj">
+   </FileRef>
+</Workspace>
