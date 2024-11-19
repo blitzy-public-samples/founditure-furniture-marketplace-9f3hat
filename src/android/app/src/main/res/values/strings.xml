@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 
+Human Tasks:
+1. Verify all strings meet branding guidelines
+2. Ensure translations are provided for all supported languages
+3. Confirm accessibility content descriptions are clear and helpful
+4. Review placeholder formats for localization compatibility
+-->
+
+<!-- 
+Requirements addressed:
+- i18n/l10n Support (3.1.1 Design Specifications): Centralized string resources 
+  supporting multi-language localization
+- Accessibility (3.1.1 Design Specifications): Screen reader support through 
+  content descriptions and hints
+-->
+<resources>
+    <!-- App Name -->
+    <string name="app_name">Founditure</string>
+
+    <!-- Authentication Screens -->
+    <string name="login_title">Login</string>
+    <string name="register_title">Register</string>
+    <string name="email_hint">Email Address</string>
+    <string name="password_hint">Password</string>
+    <string name="confirm_password_hint">Confirm Password</string>
+    <string name="login_button">Log In</string>
+    <string name="register_button">Sign Up</string>
+    <string name="forgot_password">Forgot Password?</string>
+
+    <!-- Main Navigation Titles -->
+    <string name="home_title">Home</string>
+    <string name="camera_title">Take Photo</string>
+    <string name="map_title">Find Furniture</string>
+    <string name="profile_title">Profile</string>
+    <string name="messages_title">Messages</string>
+
+    <!-- Listing Management -->
+    <string name="create_listing_title">New Listing</string>
+    <string name="listing_details_title">Listing Details</string>
+    <string name="furniture_condition">Condition</string>
+    <string name="furniture_location">Location</string>
+    <string name="furniture_description">Description</string>
+    
+    <!-- Action Buttons -->
+    <string name="post_button">Post</string>
+    <string name="cancel_button">Cancel</string>
+    <string name="save_button">Save</string>
+    <string name="delete_button">Delete</string>
+    <string name="send_button">Send</string>
+    
+    <!-- Permission Rationales -->
+    <string name="camera_permission_rationale">Camera access is needed to take photos of furniture</string>
+    <string name="location_permission_rationale">Location access is needed to show nearby furniture</string>
+    <string name="notification_permission_rationale">Notification access is needed for messaging and updates</string>
+    
+    <!-- Error Messages -->
+    <string name="error_generic">Something went wrong. Please try again.</string>
+    <string name="error_network">No internet connection. Please check your network.</string>
+    <string name="error_login">Invalid email or password</string>
+    <string name="error_registration">Registration failed. Please try again.</string>
+    
+    <!-- Success Messages -->
+    <string name="success_listing_created">Listing created successfully!</string>
+    <string name="success_message_sent">Message sent</string>
+    
+    <!-- Formatted Strings -->
+    <string name="points_earned">%1$d points earned!</string>
+    <string name="achievement_unlocked">Achievement Unlocked: %1$s</string>
+    <string name="distance_away">%1$.1f miles away</string>
+    <string name="time_posted">Posted %1$s ago</string>
+    <string name="version">Version %1$s</string>
+    
+    <!-- Messaging -->
+    <string name="message_hint">Type a message…</string>
+    
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="logout_button">Log Out</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notifications">Notifications</string>
+    <string name="language">Language</string>
+    <string name="about">About Founditure</string>
+    
+    <!-- Accessibility - Content Descriptions -->
+    <string name="content_description_camera_button">Take a photo of furniture</string>
+    <string name="content_description_map_button">Open map to find furniture</string>
+    <string name="content_description_profile_button">View your profile</string>
+    <string name="content_description_messages_button">Open messages</string>
+    <string name="content_description_post_button">Post your listing</string>
+    <string name="content_description_send_button">Send message</string>
+    <string name="content_description_settings_button">Open settings</string>
+    
+    <!-- Accessibility - Screen Reader Hints -->
+    <string name="hint_furniture_condition">Select furniture condition from options</string>
+    <string name="hint_furniture_location">Enter or select furniture location</string>
+    <string name="hint_furniture_description">Enter detailed description of furniture</string>
+    <string name="hint_points_earned">You earned %1$d points</string>
+    <string name="hint_distance_away">Furniture is %1$.1f miles from your location</string>
+</resources>
