@@ -1,0 +1,32 @@
+# Requirement: Security Compliance - Ensures proper code review process for security-critical components
+# Requirement: CI/CD Pipeline - Integrates with GitHub Actions workflows for automated code review assignments
+
+# Android mobile application code including Kotlin, resource files, and configurations
+src/android/**                  @founditure/android-team
+
+# iOS mobile application code including Swift, Storyboards, and assets
+src/ios/**                     @founditure/ios-team
+
+# Backend microservices code including APIs, services, and data models
+src/backend/**                 @founditure/backend-team
+
+# Infrastructure and deployment configurations including Terraform and Kubernetes
+infrastructure/**             @founditure/devops-team
+
+# CI/CD workflow configurations for all platform components
+.github/workflows/**          @founditure/devops-team
+
+# Security-critical backend components requiring dual review
+src/backend/src/**/security/** @founditure/security-team @founditure/backend-team
+
+# Security infrastructure configurations requiring dual review
+infrastructure/security/**    @founditure/security-team @founditure/devops-team
+
+# Container configurations for all services
+**/Dockerfile                @founditure/devops-team
+
+# Documentation files including README and API docs
+*.md                         @founditure/docs-team
+
+# Default owners for unmatched files ensuring complete coverage
+*                           @founditure/lead-architects
