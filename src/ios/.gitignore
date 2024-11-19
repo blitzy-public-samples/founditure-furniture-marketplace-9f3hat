@@ -1,0 +1,47 @@
+# Requirements addressed:
+# - Development Environment Setup (APPENDICES/A.1): Xcode 14+, CocoaPods configuration
+# - iOS Development Requirements (4.1): Swift 5.9+ environment setup
+
+# Build output and intermediates
+build/
+DerivedData/
+
+# Xcode user-specific files
+*.xcuserstate
+xcuserdata/
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+
+# Xcode workspace files
+*.xcworkspace/
+!*.xcworkspace/contents.xcworkspacedata
+
+# CocoaPods dependencies
+Pods/
+
+# macOS system files
+.DS_Store
+
+# Xcode build and optimization files
+*.moved-aside
+*.hmap
+
+# iOS app archives and debug symbols
+*.ipa
+*.dSYM.zip
+*.dSYM
+
+# Fastlane automation files
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/**/*.png
+fastlane/test_output
+
+# Sensitive configuration files
+*.xcconfig
+*.mobileprovision
+*.certSigningRequest
+*.p12
+GoogleService-Info.plist
