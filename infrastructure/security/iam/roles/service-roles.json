@@ -1,0 +1,206 @@
+{
+  "Version": "2012-10-17",
+  "ServiceRoles": {
+    /* Implements requirement 2.5.1 Security Controls - RBAC through IAM roles */
+    /* Implements requirement 5.3.1 Network Security - VPC access controls */
+    /* Implements requirement 5.2.1 Data Security - Encrypted resource access */
+    
+    "AiServiceRole": {
+      "RoleName": "founditure-ai-service-role",
+      "Description": "IAM role for AI service with permissions for Rekognition and S3",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "AiServicePolicy",
+          "PolicyDocument": "${AiServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "ai-service"
+        }
+      ]
+    },
+
+    "ListingServiceRole": {
+      "RoleName": "founditure-listing-service-role",
+      "Description": "IAM role for Listing service with permissions for S3 and DynamoDB",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "ListingServicePolicy",
+          "PolicyDocument": "${ListingServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "listing-service"
+        }
+      ]
+    },
+
+    "MessagingServiceRole": {
+      "RoleName": "founditure-messaging-service-role", 
+      "Description": "IAM role for Messaging service with permissions for SQS and SNS",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "MessagingServicePolicy",
+          "PolicyDocument": "${MessagingServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "messaging-service"
+        }
+      ]
+    },
+
+    "NotificationServiceRole": {
+      "RoleName": "founditure-notification-service-role",
+      "Description": "IAM role for Notification service with permissions for SNS and SES",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "NotificationServicePolicy",
+          "PolicyDocument": "${NotificationServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "notification-service"
+        }
+      ]
+    },
+
+    "LocationServiceRole": {
+      "RoleName": "founditure-location-service-role",
+      "Description": "IAM role for Location service with permissions for Location Service and Maps",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "LocationServicePolicy",
+          "PolicyDocument": "${LocationServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "location-service"
+        }
+      ]
+    },
+
+    "GamificationServiceRole": {
+      "RoleName": "founditure-gamification-service-role",
+      "Description": "IAM role for Gamification service with permissions for DynamoDB",
+      "AssumeRolePolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+          {
+            "Effect": "Allow",
+            "Principal": {
+              "Service": ["ecs-tasks.amazonaws.com"],
+              "AWS": ["arn:aws:iam::${account_id}:root"]
+            },
+            "Action": "sts:AssumeRole"
+          }
+        ]
+      },
+      "ManagedPolicyArns": [],
+      "Policies": [
+        {
+          "PolicyName": "GamificationServicePolicy",
+          "PolicyDocument": "${GamificationServicePolicy}"
+        }
+      ],
+      "MaxSessionDuration": 3600,
+      "Path": "/service-roles/",
+      "Tags": [
+        {
+          "Key": "Service",
+          "Value": "gamification-service"
+        }
+      ]
+    }
+  }
+}
