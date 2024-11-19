@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify that @color/ic_launcher_foreground is defined in colors.xml with a Material Design 3 compatible color value
+2. Test icon rendering on different Android versions (10+) and screen densities
+3. Validate icon appearance in both light and dark themes
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3.1.1 Design Specifications): 
+  Implements Material Design 3 principles with 8dp grid system and dynamic color support
+- Device Support (3.1.1 Design Specifications): 
+  Supports Android 10+ adaptive icons with proper scaling and positioning
+-->
+
+<!-- Platform Component: android.graphics.drawable.vector (android-21) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108"
+    android:tint="@color/ic_launcher_foreground">
+
+    <!-- 
+    Main icon group:
+    - Scaled to 60% to fit within safe zone (72x72dp)
+    - Translated by 22dp to center within the viewport
+    - Follows Material Design 3 keyline at 66dp
+    -->
+    <group
+        android:scaleX="0.6"
+        android:scaleY="0.6"
+        android:translateX="22"
+        android:translateY="22">
+        
+        <!-- 
+        Furniture icon path:
+        - Uses single-color fill for dynamic color system compatibility
+        - Path data represents a stylized piece of furniture
+        - Follows 8dp grid system for precise alignment
+        -->
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M64,16L36,16C32.7,16 30,18.7 30,22L30,78C30,81.3 32.7,84 36,84L64,84C67.3,84 70,81.3 70,78L70,22C70,18.7 67.3,16 64,16ZM64,76L36,76L36,24L64,24L64,76ZM58,44L42,44L42,52L58,52L58,44ZM58,32L42,32L42,40L58,40L58,32ZM58,56L42,56L42,64L58,64L58,56Z"/>
+    </group>
+</vector>
