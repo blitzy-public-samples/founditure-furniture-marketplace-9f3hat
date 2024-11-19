@@ -1,0 +1,41 @@
+# Build outputs and intermediates
+/build/*
+.gradle/*
+/captures/*
+*.apk
+*.aab
+*.aar
+*.ap_
+*.dex
+*.class
+bin/*
+gen/*
+out/*
+proguard/*
+
+# IDE and system files
+*.iml
+.idea/*
+.DS_Store
+local.properties
+
+# Memory and performance profiles
+*.hprof
+*.log
+
+# Native build files
+.cxx/*
+.externalNativeBuild/*
+.navigation/*
+
+# Lint outputs
+lint/intermediates/*
+lint/generated/*
+lint/outputs/*
+lint/tmp/*
+
+# Sensitive configuration files
+*.keystore
+*.jks
+google-services.json
+firebase-*.json
