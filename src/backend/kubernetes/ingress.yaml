@@ -1,0 +1,56 @@
+# Human Tasks:
+# 1. Verify DNS records are configured for api.founditure.com
+# 2. Ensure Let's Encrypt ClusterIssuer is deployed and configured
+# 3. Validate NGINX Ingress Controller version compatibility
+# 4. Review CORS policy settings for production environment
+# 5. Configure WAF rules in NGINX Ingress Controller
+# 6. Set up monitoring for TLS certificate expiration
+# 7. Verify network policies allow ingress traffic
+
+# Requirement: API Gateway (2.2.1 Core Components/API Gateway)
+# Kubernetes Ingress resource for managing external access to the Founditure platform
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: founditure-ingress
+  namespace: default
+  labels:
+    app: founditure
+  annotations:
+    # Requirement: API Gateway (2.2.1 Core Components/API Gateway)
+    # NGINX Ingress Controller configuration
+    kubernetes.io/ingress.class: "nginx"
+    
+    # Requirement: Security Architecture (2.5 Security Architecture/Security Controls)
+    # TLS certificate management with cert-manager
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    
+    # Security controls for request handling
+    nginx.ingress.kubernetes.io/proxy-body-size: "10m"
+    nginx.ingress.kubernetes.io/proxy-connect-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "30"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "30"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+
+spec:
+  # Requirement: Security Architecture (2.5 Security Architecture/Security Controls)
+  # TLS configuration for secure communication
+  tls:
+    - hosts:
+        - api.founditure.com
+      secretName: founditure-tls
+
+  # Requirement: High Availability (2.4 Cross-Cutting Concerns/Deployment Architecture)
+  # Routing rules for load balancing and traffic management
+  rules:
+    - host: api.founditure.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: api-gateway-service
+                port:
+                  name: http
