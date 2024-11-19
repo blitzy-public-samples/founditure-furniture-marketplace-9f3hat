@@ -1,0 +1,101 @@
+# Requirement: Containerization - Docker for service isolation and container orchestration with optimized build context
+# Exclude dependency directories to reduce build context size as dependencies are installed during build
+node_modules
+**/node_modules
+
+# Requirement: Development Environment - Local development environment configuration with Docker containers and proper build context optimization
+# Exclude compiled output as it will be built inside container during multi-stage build
+dist
+**/dist
+build
+**/build
+
+# Requirement: Security Architecture - Implements secure container configuration by excluding sensitive files and credentials
+# Exclude environment and secret files for security
+.env*
+**/.env*
+secrets
+**/secrets
+**/*.key
+**/*.pem
+
+# Exclude version control data to reduce build context and prevent exposure
+.git
+.gitignore
+**/.git
+**/.gitignore
+
+# Exclude log files and directories for security and reduced context size
+*.log
+**/*.log
+logs
+**/logs
+coverage
+**/coverage
+
+# Exclude development and documentation files not needed in production
+*.md
+**/*.md
+README.md
+CHANGELOG.md
+.vscode
+**/.vscode
+.idea
+**/.idea
+
+# Exclude test files from production build
+test
+**/test
+**/*.test.ts
+**/*.spec.ts
+jest.config.js
+**/jest.config.js
+
+# Exclude development configuration files
+.eslintrc*
+**/.eslintrc*
+.prettierrc*
+**/.prettierrc*
+.editorconfig
+**/.editorconfig
+nodemon.json
+**/nodemon.json
+
+# Exclude Kubernetes deployment files not needed in container
+kubernetes
+**/kubernetes
+k8s
+**/k8s
+
+# Exclude Docker files not needed in container
+Dockerfile
+**/Dockerfile
+docker-compose*.yml
+**/*.dockerfile
+.dockerignore
+**/.dockerignore
+
+# Exclude TypeScript source maps and configuration
+**/*.map
+**/tsconfig.json
+**/tsconfig.*.json
+
+# Exclude package manager files not needed in container
+yarn.lock
+**/yarn.lock
+package-lock.json
+**/package-lock.json
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Exclude CI/CD configuration files
+.gitlab-ci.yml
+.travis.yml
+.circleci
+.github
+
+# Exclude development scripts and utilities
+scripts
+tools
+config
