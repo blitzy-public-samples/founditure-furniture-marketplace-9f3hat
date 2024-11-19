@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Human Tasks:
+1. Verify that dynamic colors are enabled in the app's theme configuration
+2. Test color contrast ratios using Material Theme Builder to ensure WCAG 2.1 AA compliance
+3. Validate color harmonization across different Android devices and versions
+4. Test color appearance in both light and dark themes across different screen sizes
+-->
+
+<!-- 
+Dependencies:
+androidx.compose.material3:material3:1.1.0 - Material Design 3 color system integration
+-->
+
+<!-- 
+Requirements Addressed:
+- Visual Hierarchy (3.1.1): Material Design 3 with dynamic color system
+- Theme Support (3.1.1): Light/dark mode with dynamic color adaptation
+- Accessibility (3.1.1): WCAG 2.1 AA compliant color contrast ratios
+-->
+<resources>
+    <!-- Primary colors - Dynamic color tokens for Material Design 3 -->
+    <color name="primary">@color/material_dynamic_primary40</color>
+    <color name="primary_dark">@color/material_dynamic_primary80</color>
+    
+    <!-- Secondary colors -->
+    <color name="secondary">@color/material_dynamic_secondary40</color>
+    <color name="secondary_dark">@color/material_dynamic_secondary80</color>
+    
+    <!-- Tertiary colors -->
+    <color name="tertiary">@color/material_dynamic_tertiary40</color>
+    <color name="tertiary_dark">@color/material_dynamic_tertiary80</color>
+    
+    <!-- Error colors - Static values for consistent error states -->
+    <color name="error">#B3261E</color>
+    <color name="error_dark">#F2B8B5</color>
+    
+    <!-- Background colors -->
+    <color name="background">#FFFBFE</color>
+    <color name="background_dark">#1C1B1F</color>
+    
+    <!-- Surface colors -->
+    <color name="surface">#FFFBFE</color>
+    <color name="surface_dark">#1C1B1F</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="surface_variant_dark">#49454F</color>
+    
+    <!-- Outline colors -->
+    <color name="outline">#79747E</color>
+    <color name="outline_dark">#938F99</color>
+    
+    <!-- On colors for content that appears on top of components -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_primary_dark">#381E72</color>
+    
+    <color name="on_secondary">#FFFFFF</color>
+    <color name="on_secondary_dark">#332D41</color>
+    
+    <color name="on_tertiary">#FFFFFF</color>
+    <color name="on_tertiary_dark">#492532</color>
+    
+    <color name="on_error">#FFFFFF</color>
+    <color name="on_error_dark">#601410</color>
+    
+    <color name="on_background">#1C1B1F</color>
+    <color name="on_background_dark">#E6E1E5</color>
+    
+    <color name="on_surface">#1C1B1F</color>
+    <color name="on_surface_dark">#E6E1E5</color>
+    
+    <color name="on_surface_variant">#49454F</color>
+    <color name="on_surface_variant_dark">#CAC4D0</color>
+    
+    <!-- Utility colors -->
+    <color name="black">#000000</color>
+    <color name="white">#FFFFFF</color>
+    <color name="transparent">#00000000</color>
+</resources>
