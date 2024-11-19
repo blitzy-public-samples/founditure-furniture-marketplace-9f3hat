@@ -1,0 +1,139 @@
+# Human Tasks:
+# 1. Verify AWS credentials are configured in cluster secrets
+# 2. Configure TensorFlow model storage and versioning
+# 3. Set up monitoring for AI service metrics
+# 4. Configure auto-scaling thresholds based on load testing
+# 5. Review security policies with security team
+# 6. Set up log aggregation for AI service pods
+# 7. Configure network policies for service communication
+
+# Requirement: AI-powered furniture recognition (1.2 System Overview)
+# Kubernetes deployment configuration for AI service handling furniture recognition
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-service
+  namespace: default
+  labels:
+    app: founditure
+    service: ai-service
+spec:
+  # Requirement: Containerization (6.3 Containerization)
+  # Configure high availability with 3 replicas
+  replicas: 3
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  selector:
+    matchLabels:
+      app: founditure
+      service: ai-service
+  template:
+    metadata:
+      labels:
+        app: founditure
+        service: ai-service
+    spec:
+      containers:
+      - name: ai-service
+        image: founditure/ai-service:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 3003
+          protocol: TCP
+        # Requirement: Core Components (2.2.1)
+        # Configure resource limits for container
+        resources:
+          requests:
+            cpu: "500m"
+            memory: "512Mi"
+          limits:
+            cpu: "1000m"
+            memory: "1Gi"
+        # Health monitoring configuration
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 10
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 3003
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 5
+          failureThreshold: 3
+        # Environment configuration
+        envFrom:
+        - configMapRef:
+            name: founditure-config
+        env:
+        - name: SERVICE_NAME
+          value: "ai-service"
+        - name: PORT
+          value: "3003"
+        # Security context configuration
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: true
+          allowPrivilegeEscalation: false
+      serviceAccountName: ai-service-account
+      automountServiceAccountToken: true
+
+---
+# Requirement: Core Components (2.2.1)
+# Service configuration for AI service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-service
+  namespace: default
+  labels:
+    app: founditure
+    service: ai-service
+spec:
+  type: ClusterIP
+  ports:
+  - port: 3003
+    targetPort: 3003
+    protocol: TCP
+    name: http
+  selector:
+    app: founditure
+    service: ai-service
+
+---
+# Requirement: Containerization (6.3 Containerization)
+# Horizontal Pod Autoscaler configuration
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: ai-service-hpa
+  namespace: default
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: ai-service
+  minReplicas: 3
+  maxReplicas: 10
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
