@@ -1,0 +1,182 @@
+# Requirement: CI/CD Pipeline - Automated build, test, and deployment pipeline using GitHub Actions
+name: Android CI/CD
+
+# Trigger workflow on push to main branch and pull requests
+on:
+  push:
+    branches: [ main ]
+    tags:
+      - 'v*'  # Push events to version tags
+  pull_request:
+    branches: [ main ]
+
+# Environment variables used across jobs
+env:
+  JAVA_VERSION: '17'  # Requirement: Development Environment Setup - Java 17 for Android development
+  GRADLE_VERSION: '8.1.2'  # Requirement: Development Environment Setup - Gradle 8.0+
+  KOTLIN_VERSION: '1.9.0'  # Requirement: Development Environment Setup - Kotlin 1.9+
+
+# Define jobs in the workflow
+jobs:
+  # Requirement: Testing Strategy - Unit testing with JUnit and integration testing for Android components
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    
+    steps:
+      # Requirement: CI/CD Pipeline - Source code checkout
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for proper versioning
+      
+      # Requirement: Development Environment Setup - Java environment configuration
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+      
+      # Requirement: Development Environment Setup - Gradle configuration
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+      
+      # Cache Gradle dependencies for faster builds
+      - name: Cache Gradle packages
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.android/build-cache
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+      
+      # Grant execute permission for gradlew
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./src/android/gradlew
+      
+      # Requirement: Testing Strategy - Run unit tests
+      - name: Run Unit Tests
+        run: |
+          cd src/android
+          ./gradlew test
+      
+      # Run Android Lint for code quality
+      - name: Run Android Lint
+        run: |
+          cd src/android
+          ./gradlew lint
+      
+      # Build debug APK
+      - name: Build Debug APK
+        run: |
+          cd src/android
+          ./gradlew assembleDebug
+      
+      # Upload build artifacts
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: debug-apk
+          path: src/android/app/build/outputs/apk/debug/*.apk
+      
+      # Upload test results
+      - name: Upload Test Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: test-results
+          path: src/android/app/build/reports/tests/
+      
+      # Upload lint results
+      - name: Upload Lint Results
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: lint-report
+          path: src/android/app/build/reports/lint-results.html
+
+  # Release job - only runs on version tags
+  release:
+    name: Create Release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: ${{ env.JAVA_VERSION }}
+          distribution: 'temurin'
+          cache: 'gradle'
+      
+      # Setup Gradle with specific version
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: ${{ env.GRADLE_VERSION }}
+      
+      # Decode keystore file
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_FILE }}" > keystore.asc
+          gpg -d --passphrase "${{ secrets.KEYSTORE_PASSPHRASE }}" --batch keystore.asc > src/android/app/founditure.keystore
+      
+      # Build release APK
+      - name: Build Release APK
+        env:
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          cd src/android
+          ./gradlew assembleRelease
+      
+      # Create GitHub release
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+      
+      # Upload release APK
+      - name: Upload Release APK
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: src/android/app/build/outputs/apk/release/app-release.apk
+          asset_name: founditure-${{ github.ref_name }}.apk
+          asset_content_type: application/vnd.android.package-archive
+      
+      # Generate and upload release notes
+      - name: Generate Release Notes
+        run: |
+          echo "# What's New" > release_notes.md
+          echo "## Changes in ${{ github.ref_name }}" >> release_notes.md
+          git log --pretty=format:"* %s" $(git describe --tags --abbrev=0 HEAD^)..HEAD >> release_notes.md
+      
+      - name: Upload Release Notes
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: release_notes.md
+          asset_name: release_notes.md
+          asset_content_type: text/markdown
