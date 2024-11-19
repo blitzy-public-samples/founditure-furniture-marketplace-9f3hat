@@ -1,0 +1,302 @@
+# Requirement: Core Components - Containerization strategy for microservices architecture
+# Requirement: Containerization - Container specifications for API services
+# Requirement: Data Storage Solutions - Configuration of PostgreSQL, MongoDB, and Redis containers
+version: '3.8'
+
+services:
+  # API Gateway service for request routing and authentication
+  api-gateway:
+    build:
+      context: ./src/api-gateway
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - AUTH_SERVICE_URL=http://auth-service:3001
+      - LISTING_SERVICE_URL=http://listing-service:3003
+      - MESSAGING_SERVICE_URL=http://messaging-service:3004
+    depends_on:
+      - auth-service
+      - listing-service
+      - messaging-service
+    networks:
+      - founditure-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Authentication service with JWT and OAuth2 support
+  auth-service:
+    build:
+      context: ./src/auth-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=founditure
+      - POSTGRES_USER=founditure
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - JWT_SECRET_FILE=/run/secrets/jwt-secret
+      - OAUTH_GOOGLE_ID_FILE=/run/secrets/oauth-google-id
+      - OAUTH_GOOGLE_SECRET_FILE=/run/secrets/oauth-google-secret
+    depends_on:
+      - postgres
+    networks:
+      - founditure-network
+    secrets:
+      - postgres-password
+      - jwt-secret
+      - oauth-google-id
+      - oauth-google-secret
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3001/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # AI/ML service for furniture recognition
+  ai-service:
+    build:
+      context: ./src/ai-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+      - AWS_ACCESS_KEY_ID_FILE=/run/secrets/aws-access-key
+      - AWS_SECRET_ACCESS_KEY_FILE=/run/secrets/aws-secret-key
+      - AWS_REGION=us-east-1
+      - MODEL_PATH=/usr/src/app/models
+    volumes:
+      - ai_models:/usr/src/app/models
+    networks:
+      - founditure-network
+    secrets:
+      - aws-access-key
+      - aws-secret-key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3002/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Furniture listing management service
+  listing-service:
+    build:
+      context: ./src/listing-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3003
+      - MONGODB_URI=mongodb://founditure:${MONGO_PASSWORD}@mongodb:27017/founditure
+      - AWS_S3_BUCKET=founditure-listings
+      - AWS_REGION=us-east-1
+    depends_on:
+      - mongodb
+    networks:
+      - founditure-network
+    secrets:
+      - mongo-password
+      - aws-access-key
+      - aws-secret-key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Real-time messaging service
+  messaging-service:
+    build:
+      context: ./src/messaging-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3004
+      - REDIS_URL=redis://redis:6379
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=founditure
+      - POSTGRES_USER=founditure
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+    depends_on:
+      - redis
+      - postgres
+    networks:
+      - founditure-network
+    secrets:
+      - postgres-password
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3004/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Location and geocoding service
+  location-service:
+    build:
+      context: ./src/location-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3005
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=founditure
+      - POSTGRES_USER=founditure
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - GOOGLE_MAPS_API_KEY_FILE=/run/secrets/google-maps-key
+    depends_on:
+      - postgres
+    networks:
+      - founditure-network
+    secrets:
+      - postgres-password
+      - google-maps-key
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3005/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Points and achievements service
+  gamification-service:
+    build:
+      context: ./src/gamification-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3006
+      - POSTGRES_HOST=postgres
+      - POSTGRES_DB=founditure
+      - POSTGRES_USER=founditure
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      - founditure-network
+    secrets:
+      - postgres-password
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3006/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Push notification service
+  notification-service:
+    build:
+      context: ./src/notification-service
+    environment:
+      - NODE_ENV=production
+      - PORT=3007
+      - REDIS_URL=redis://redis:6379
+      - FIREBASE_CREDENTIALS_FILE=/run/secrets/firebase-credentials
+    depends_on:
+      - redis
+    networks:
+      - founditure-network
+    secrets:
+      - firebase-credentials
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3007/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # PostgreSQL database for structured data
+  postgres:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=founditure
+      - POSTGRES_PASSWORD_FILE=/run/secrets/postgres-password
+      - POSTGRES_DB=founditure
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - founditure-network
+    secrets:
+      - postgres-password
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U founditure"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # MongoDB for furniture listings
+  mongodb:
+    image: mongo:6.0
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=founditure
+      - MONGO_INITDB_ROOT_PASSWORD_FILE=/run/secrets/mongo-password
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - founditure-network
+    secrets:
+      - mongo-password
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # Redis for caching and message broker
+  redis:
+    image: redis:7.0-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - founditure-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+volumes:
+  postgres_data:
+    driver: local
+  mongo_data:
+    driver: local
+  redis_data:
+    driver: local
+  ai_models:
+    driver: local
+
+networks:
+  founditure-network:
+    driver: bridge
+    internal: true
+    attachable: true
+    enable_ipv6: false
+    driver_opts:
+      encrypted: "true"
+
+secrets:
+  postgres-password:
+    file: ./secrets/postgres-password.txt
+  mongo-password:
+    file: ./secrets/mongo-password.txt
+  jwt-secret:
+    file: ./secrets/jwt-secret.txt
+  aws-access-key:
+    file: ./secrets/aws-access-key.txt
+  aws-secret-key:
+    file: ./secrets/aws-secret-key.txt
+  google-maps-key:
+    file: ./secrets/google-maps-key.txt
+  oauth-google-id:
+    file: ./secrets/oauth-google-id.txt
+  oauth-google-secret:
+    file: ./secrets/oauth-google-secret.txt
+  firebase-credentials:
+    file: ./secrets/firebase-credentials.json
