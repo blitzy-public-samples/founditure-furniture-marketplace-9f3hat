@@ -1,0 +1,134 @@
+# Human Tasks:
+# 1. Verify filesystem permissions for log storage directories
+# 2. Ensure network connectivity between Loki and Alertmanager
+# 3. Review retention periods based on compliance requirements
+# 4. Validate log volume estimates for storage capacity planning
+# 5. Configure proper authentication if deploying in multi-tenant environment
+
+# Loki version: 2.8.0
+
+# Addresses requirement: System Monitoring - Centralized log aggregation and storage
+auth_enabled: false
+
+# Server configuration
+# Addresses requirement: Production Monitoring - 24/7 production log monitoring
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+  http_server_read_timeout: 30s
+  http_server_write_timeout: 30s
+  grpc_server_max_recv_msg_size: 104857600  # 100MB
+  grpc_server_max_send_msg_size: 104857600  # 100MB
+
+# Common configuration
+common:
+  path_prefix: /loki
+  storage:
+    filesystem:
+      chunks_directory: /data/chunks
+      rules_directory: /data/rules
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+# Ingester configuration
+# Addresses requirement: System Monitoring - Comprehensive system observability
+ingester:
+  lifecycler:
+    address: 0.0.0.0
+    ring:
+      kvstore:
+        store: inmemory
+      replication_factor: 1
+    final_sleep: 0s
+  chunk_idle_period: 1h
+  chunk_retain_period: 30s
+  max_chunk_age: 2h
+  wal:
+    enabled: true
+    dir: /data/wal
+
+# Schema configuration
+# Addresses requirement: Production Monitoring - Full observability stack integration
+schema_config:
+  configs:
+    - from: "2023-01-01"
+      store: boltdb-shipper
+      object_store: filesystem
+      schema: v11
+      index:
+        prefix: index_
+        period: 24h
+
+# Storage configuration
+# Addresses requirement: System Monitoring - Centralized log storage
+storage_config:
+  boltdb_shipper:
+    active_index_directory: /data/index
+    cache_location: /data/boltdb-cache
+    shared_store: filesystem
+    cache_ttl: 24h
+  filesystem:
+    directory: /data/chunks
+
+# Limits configuration
+# Addresses requirement: Security Monitoring - Real-time log collection and analysis
+limits_config:
+  enforce_metric_name: false
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h  # 7 days
+  ingestion_rate_mb: 10
+  ingestion_burst_size_mb: 20
+  max_entries_limit_per_query: 5000
+  max_global_streams_per_user: 5000
+  max_query_length: 721h  # 30 days
+  max_query_parallelism: 32
+  cardinality_limit: 100000
+
+# Table manager configuration
+# Addresses requirement: Production Monitoring - Log retention management
+table_manager:
+  retention_deletes_enabled: true
+  retention_period: 744h  # 31 days
+  poll_interval: 24h
+
+# Ruler configuration
+# Addresses requirement: Security Monitoring - Real-time log analysis
+ruler:
+  storage:
+    type: local
+    local:
+      directory: /data/rules
+  rule_path: /data/rules
+  alertmanager_url: http://alertmanager:9093
+  ring:
+    kvstore:
+      store: inmemory
+  enable_api: true
+  enable_alertmanager_v2: true
+  evaluation_interval: 1m
+  poll_interval: 1m
+  concurrent_executions: 10
+
+# Query configuration
+query_range:
+  align_queries_with_step: true
+  max_retries: 5
+  cache_results: true
+  results_cache:
+    cache:
+      enable_fifocache: true
+      fifocache:
+        max_size_mb: 100
+        validity: 24h
+
+# Frontend configuration
+frontend:
+  compress_responses: true
+  log_queries_longer_than: 5s
+  downstream_url: http://localhost:3100
+
+# Analytics configuration
+analytics:
+  reporting_enabled: false
