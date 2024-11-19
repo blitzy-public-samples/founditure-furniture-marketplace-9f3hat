@@ -1,0 +1,88 @@
+/* 
+  Localizable.strings
+  Founditure
+  
+  Human Tasks:
+  1. Verify all strings with content team for tone and consistency
+  2. Ensure all placeholder formats (%@, %d, %.1f) match the code implementation
+  3. Review error messages with UX team for clarity
+  4. Validate accessibility labels meet WCAG 2.1 AA requirements
+*/
+
+// MARK: - Common
+/* Requirement: 3.1 User Interface Design/3.1.2 Content Guidelines - App name */
+"app_name" = "Founditure";
+
+/* Common action buttons */
+"ok_button" = "OK";
+"cancel_button" = "Cancel";
+"save_button" = "Save";
+"delete_button" = "Delete";
+
+// MARK: - Auth
+/* Authentication screen titles and inputs */
+"login_title" = "Login";
+"login_email_placeholder" = "Enter your email";
+"login_password_placeholder" = "Enter your password";
+"login_button" = "Sign In";
+"login_biometric_button" = "Sign in with Face ID";
+"login_error" = "Invalid email or password";
+"register_title" = "Create Account";
+"password_requirements" = "Password must be at least %d characters";
+
+// MARK: - Home
+/* Home screen content */
+"home_title" = "Home";
+"home_empty_state" = "No furniture listings yet";
+"home_nearby_section" = "Nearby Finds";
+"home_distance_away" = "%.1f miles away";
+
+// MARK: - Camera
+/* Camera-related messages and permissions */
+"camera_permission_title" = "Camera Access";
+"camera_permission_message" = "Founditure needs camera access to capture furniture photos";
+"camera_capture_button" = "Take Photo";
+"camera_size_warning" = "Image size exceeds %d MB limit";
+
+// MARK: - Listings
+/* Furniture listing creation and management */
+"listing_create_title" = "New Listing";
+"listing_title_placeholder" = "What did you find?";
+"listing_description_placeholder" = "Describe the furniture (condition, size, etc.)";
+"listing_location_title" = "Location";
+"listing_post_button" = "Post Listing";
+"listing_search_radius" = "Within %.1f miles";
+
+// MARK: - Messages
+/* Messaging interface strings */
+"messages_title" = "Messages";
+"message_placeholder" = "Type a message";
+"message_send_button" = "Send";
+
+// MARK: - Profile
+/* User profile section */
+"profile_title" = "Profile";
+"profile_points" = "Points: %@";
+"profile_achievements" = "Achievements";
+"profile_settings" = "Settings";
+
+// MARK: - Map
+/* Map view interface */
+"map_title" = "Map";
+"map_search_placeholder" = "Search nearby";
+"map_distance_format" = "%.1f miles away";
+"map_location_update" = "Updating location...";
+
+// MARK: - Errors
+/* Requirement: 3.2 Error Handling/3.2.1 User Feedback - Error messages */
+"error_generic" = "Something went wrong. Please try again.";
+"error_network" = "No internet connection";
+"error_location" = "Unable to access location";
+"error_timeout" = "Request timed out. Please try again.";
+
+// MARK: - Achievements
+/* Requirement: Gamification feature strings */
+"achievement_first_find" = "First Find";
+"achievement_quick_collector" = "Quick Collector";
+"achievement_super_saver" = "Super Saver";
+"achievement_unlocked" = "Achievement Unlocked!";
